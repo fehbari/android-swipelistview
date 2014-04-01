@@ -213,7 +213,6 @@ public class SwipeListView extends ListView {
         touchListener.setSwipeActionRight(swipeActionRight);
         touchListener.setSwipeMode(swipeMode);
         touchListener.setSwipeClosesAllItemsWhenListMoves(swipeCloseAllItemsWhenMoveList);
-        touchListener.setSwipeOpenOnLongPress(swipeOpenOnLongPress);
         touchListener.setSwipeDrawableChecked(swipeDrawableChecked);
         touchListener.setSwipeDrawableUnchecked(swipeDrawableUnchecked);
         setOnTouchListener(touchListener);
@@ -543,15 +542,6 @@ public class SwipeListView extends ListView {
     }
 
     /**
-     * Sets if the user can open an item with long pressing on cell
-     *
-     * @param swipeOpenOnLongPress
-     */
-    public void setSwipeOpenOnLongPress(boolean swipeOpenOnLongPress) {
-        touchListener.setSwipeOpenOnLongPress(swipeOpenOnLongPress);
-    }
-
-    /**
      * Set swipe mode
      *
      * @param swipeMode
@@ -603,6 +593,13 @@ public class SwipeListView extends ListView {
      */
     public void setAnimationTime(long animationTime) {
         touchListener.setAnimationTime(animationTime);
+    }
+
+    /**
+     * @return Swipe touch listener.
+     */
+    protected SwipeListViewTouchListener getTouchListener() {
+        return touchListener;
     }
 
     /**

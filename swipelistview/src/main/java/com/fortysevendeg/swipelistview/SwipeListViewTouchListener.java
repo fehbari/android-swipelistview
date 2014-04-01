@@ -20,6 +20,7 @@
 
 package com.fortysevendeg.swipelistview;
 
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
@@ -50,7 +51,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private static final int DISPLACE_CHOICE = 80;
 
     private int swipeMode = SwipeListView.SWIPE_MODE_BOTH;
-    private boolean swipeOpenOnLongPress = true;
     private boolean swipeClosesAllItemsWhenListMoves = true;
 
     private int swipeFrontView = 0;
@@ -100,6 +100,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private int oldSwipeActionRight;
     private int oldSwipeActionLeft;
 
+    private int rightBackgroundColor;
+    private int leftBackgroundColor;
+
+    private int animationMoveTo;
+
     /**
      * Constructor
      *
@@ -141,15 +146,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 swipeListView.onClickFrontView(downPosition);
             }
         });
-        if (swipeOpenOnLongPress) {
-            frontView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    openAnimate(downPosition);
-                    return false;
-                }
-            });
-        }
     }
 
     /**
@@ -212,15 +208,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     public void setSwipeClosesAllItemsWhenListMoves(boolean swipeClosesAllItemsWhenListMoves) {
         this.swipeClosesAllItemsWhenListMoves = swipeClosesAllItemsWhenListMoves;
-    }
-
-    /**
-     * Set if the user can open an item with long press on cell
-     *
-     * @param swipeOpenOnLongPress
-     */
-    public void setSwipeOpenOnLongPress(boolean swipeOpenOnLongPress) {
-        this.swipeOpenOnLongPress = swipeOpenOnLongPress;
     }
 
     /**
@@ -293,6 +280,22 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     protected void setSwipeDrawableUnchecked(int swipeDrawableUnchecked) {
         this.swipeDrawableUnchecked = swipeDrawableUnchecked;
+    }
+
+    /**
+     * Set the color for the right swipe background.
+     * @param backgroundColor Color to set.
+     */
+    public void setRightBackgroundColor(int backgroundColor) {
+        rightBackgroundColor = backgroundColor;
+    }
+
+    /**
+     * Set the color for the left swipe background.
+     * @param backgroundColor Color to set.
+     */
+    public void setLeftBackgroundColor(int backgroundColor) {
+        leftBackgroundColor = backgroundColor;
     }
 
     /**
@@ -479,7 +482,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
             generateRevealAnimate(view, swap, swapRight, position);
         }
         if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_DISMISS) {
-            generateDismissAnimate(parentView, swap, swapRight, position);
+            generateDismissAnimate(frontView, swap, swapRight, position);
         }
         if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_CHOICE) {
             generateChoiceAnimate(view, position);
@@ -514,33 +517,26 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      * @param position  Position of list
      */
     private void generateDismissAnimate(final View view, final boolean swap, final boolean swapRight, final int position) {
-        int moveTo = 0;
+        animationMoveTo = 0;
         if (opened.get(position)) {
             if (!swap) {
-                moveTo = openedRight.get(position) ? (int) (viewWidth - rightOffset) : (int) (-viewWidth + leftOffset);
+                animationMoveTo = openedRight.get(position) ? (int) (viewWidth - rightOffset) : (int) (-viewWidth + leftOffset);
             }
         } else {
             if (swap) {
-                moveTo = swapRight ? (int) (viewWidth - rightOffset) : (int) (-viewWidth + leftOffset);
+                animationMoveTo = swapRight ? (int) (viewWidth - rightOffset) : (int) (-viewWidth + leftOffset);
             }
         }
 
-        int alpha = 1;
-        if (swap) {
-            ++dismissAnimationRefCount;
-            alpha = 0;
-        }
-
         animate(view)
-                .translationX(moveTo)
-                .alpha(alpha)
+                .translationX(animationMoveTo)
                 .setDuration(animationTime)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         if (swap) {
                             closeOpenedItems();
-                            performDismiss(view, position, true);
+                            performDismiss(parentView, position, true);
                         }
                         resetCell();
                     }
@@ -596,7 +592,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 backView.setVisibility(View.VISIBLE);
             }
             frontView.setClickable(opened.get(downPosition));
-            frontView.setLongClickable(opened.get(downPosition));
             frontView = null;
             backView = null;
             downPosition = ListView.INVALID_POSITION;
@@ -734,7 +729,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         downPosition = childPosition;
 
                         frontView.setClickable(!opened.get(downPosition));
-                        frontView.setLongClickable(!opened.get(downPosition));
 
                         velocityTracker = VelocityTracker.obtain();
                         velocityTracker.addMovement(motionEvent);
@@ -792,11 +786,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 velocityTracker.recycle();
                 velocityTracker = null;
                 downX = 0;
-                // change clickable front view
-//                if (swap) {
-//                    frontView.setClickable(opened.get(downPosition));
-//                    frontView.setLongClickable(opened.get(downPosition));
-//                }
+
                 swiping = false;
                 break;
             }
@@ -840,6 +830,14 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 if (deltaMode > slop && swipeCurrentAction == SwipeListView.SWIPE_ACTION_NONE && velocityY < velocityX) {
                     swiping = true;
                     swipingRight = (deltaX > 0);
+
+                    // Changes colors based on swipe direction.
+                    if (swipingRight) {
+                        backView.setBackgroundColor(rightBackgroundColor);
+                    } else {
+                        backView.setBackgroundColor(leftBackgroundColor);
+                    }
+
                     Log.d("SwipeListView", "deltaX: " + deltaX + " - swipingRight: " + swipingRight);
                     if (opened.get(downPosition)) {
                         swipeListView.onStartClose(downPosition, swipingRight);
@@ -863,6 +861,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     cancelEvent.setAction(MotionEvent.ACTION_CANCEL |
                             (MotionEventCompat.getActionIndex(motionEvent) << MotionEventCompat.ACTION_POINTER_INDEX_SHIFT));
                     swipeListView.onTouchEvent(cancelEvent);
+
                     if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_CHOICE) {
                         backView.setVisibility(View.GONE);
                     }
@@ -924,11 +923,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 backView.setVisibility(View.VISIBLE);
             }
         }
-        if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_DISMISS) {
-            setTranslationX(parentView, deltaX);
-            setAlpha(parentView, Math.max(0f, Math.min(1f,
-                    1f - 2f * Math.abs(deltaX) / viewWidth)));
-        } else if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_CHOICE) {
+
+        if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_CHOICE) {
             if ((swipingRight && deltaX > 0 && posX < DISPLACE_CHOICE)
                     || (!swipingRight && deltaX < 0 && posX > -DISPLACE_CHOICE)
                     || (swipingRight && deltaX < DISPLACE_CHOICE)
@@ -1020,6 +1016,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         }
         swipeListView.onDismiss(dismissPositions);
 
+        // TODO: Find out why a thin line of the dismissed view stays on screen.
         ViewGroup.LayoutParams lp;
         for (PendingDismissData pendingDismiss : pendingDismisses) {
             // Reset view presentation
@@ -1033,7 +1030,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         }
 
         resetPendingDismisses();
-
     }
 
 }
