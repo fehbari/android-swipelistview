@@ -57,6 +57,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private static final int DISPLACE_CHOICE = 80;
 
     private int swipeMode = SwipeListView.SWIPE_MODE_BOTH;
+    private int longSwipeMode = SwipeListView.LONG_SWIPE_MODE_BOTH;
     private boolean swipeClosesAllItemsWhenListMoves = true;
 
     private int swipeFrontView = 0;
@@ -88,8 +89,13 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
     private float downX;
     private float previousRawX;
+
     private boolean swiping;
     private boolean swipingRight;
+    private boolean swipingLongRight;
+    private boolean swipingLeft;
+    private boolean swipingLongLeft;
+
     private int downPosition;
     private View parentView;
     private View frontView;
@@ -97,9 +103,13 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private boolean paused;
 
     private int swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
+    private int longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_NONE;
 
     private int swipeActionLeft = SwipeListView.SWIPE_ACTION_REVEAL;
     private int swipeActionRight = SwipeListView.SWIPE_ACTION_REVEAL;
+
+    private int longSwipeActionLeft = SwipeListView.LONG_SWIPE_ACTION_DISMISS;
+    private int longSwipeActionRight = SwipeListView.LONG_SWIPE_ACTION_DISMISS;
 
     private List<Boolean> opened = new ArrayList<Boolean>();
     private List<Boolean> openedRight = new ArrayList<Boolean>();
@@ -243,6 +253,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     }
 
     /**
+     * Sets the long swipe mode
+     *
+     * @param longSwipeMode
+     */
+    public void setLongSwipeMode(int longSwipeMode) {
+        this.longSwipeMode = longSwipeMode;
+    }
+
+    /**
      * Check is swiping is enabled
      *
      * @return
@@ -285,6 +304,24 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     public void setSwipeActionRight(int swipeActionRight) {
         this.swipeActionRight = swipeActionRight;
+    }
+
+    /**
+     * Set long action on left
+     *
+     * @param longSwipeActionLeft Action
+     */
+    public void setLongSwipeActionLeft(int longSwipeActionLeft) {
+        this.longSwipeActionLeft = longSwipeActionLeft;
+    }
+
+    /**
+     * Set long action on right
+     *
+     * @param longSwipeActionRight Action
+     */
+    public void setLongSwipeActionRight(int longSwipeActionRight) {
+        this.longSwipeActionRight = longSwipeActionRight;
     }
 
     /**
@@ -539,13 +576,27 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     private void generateAnimate(final View view, final boolean swap, final boolean swapRight, final int position) {
         Log.d("SwipeListView", "swap: " + swap + " - swapRight: " + swapRight + " - position: " + position);
-        if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_REVEAL) {
-            generateRevealAnimate(view, swap, swapRight, position);
-        }
-        if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_DISMISS) {
-            generateDismissAnimate(frontView, swap, swapRight, position);
-        }
-        if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_CHOICE) {
+        if (swipingRight || swipingLeft) {
+            if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_REVEAL) {
+                generateRevealAnimate(view, swap, swapRight, position);
+            }
+            if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_DISMISS) {
+                generateDismissAnimate(frontView, swap, swapRight, position);
+            }
+            if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_CHOICE) {
+                generateChoiceAnimate(view, position);
+            }
+            if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_NONE) {
+                generateChoiceAnimate(view, position);
+            }
+        } else if (swipingLongRight || swipingLongLeft) {
+            if (longSwipeCurrentAction == SwipeListView.LONG_SWIPE_ACTION_REVEAL) {
+                generateRevealAnimate(view, swap, swapRight, position);
+            }
+            if (longSwipeCurrentAction == SwipeListView.LONG_SWIPE_ACTION_DISMISS) {
+                generateDismissAnimate(frontView, swap, swapRight, position);
+            }
+        } else {
             generateChoiceAnimate(view, position);
         }
     }
@@ -766,6 +817,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     return false;
                 }
                 swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
+                longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_NONE;
 
                 int childCount = swipeListView.getChildCount();
                 int[] listViewCoords = new int[2];
@@ -810,7 +862,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 boolean swap = false;
                 boolean swapRight = false;
 
-                // TODO: Trigger long swipe actions.
                 if (didRegretSwipe()) {
                     swap = false;
                 } else if (Math.abs(deltaX) > swipeThreshold) {
@@ -822,12 +873,20 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     swap = false;
                 } else if (opened.get(downPosition) && !openedRight.get(downPosition) && !swapRight) {
                     swap = false;
+                } else if (swipeMode == SwipeListView.SWIPE_MODE_LEFT && deltaX > swipeThreshold) {
+                    swap = false;
+                } else if (swipeMode == SwipeListView.SWIPE_MODE_RIGHT && deltaX < swipeThreshold) {
+                    swap = false;
                 }
 
                 generateAnimate(frontView, swap, swapRight, downPosition);
                 if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_CHOICE) {
                     swapChoiceState(downPosition);
                 }
+
+                /* TODO: Trigger long swipe actions.
+                 * Create a method to determine where it's swiping to (and if it's allowed).
+                 * Then simply call a callback for each case. */
 
                 // Interaction is done, reset state variables.
                 downX = 0;
@@ -858,8 +917,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         swipeMode = changeSwipeMode;
                     }
 
-                    // TODO: Add long swipe modes.
-                    if (swipeMode == SwipeListView.SWIPE_MODE_NONE) {
+                    if (swipeMode == SwipeListView.SWIPE_MODE_NONE && !longSwipeEnabled) {
                         deltaMode = 0;
                     } else if (swipeMode != SwipeListView.SWIPE_MODE_BOTH) {
                         if (opened.get(downPosition)) {
@@ -869,81 +927,102 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                                 deltaMode = 0;
                             }
                         } else {
-                            if (swipeMode == SwipeListView.SWIPE_MODE_LEFT && deltaX > 0) {
-                                deltaMode = 0;
-                            } else if (swipeMode == SwipeListView.SWIPE_MODE_RIGHT && deltaX < 0) {
-                                deltaMode = 0;
+                            if (swipeMode == SwipeListView.SWIPE_MODE_LEFT && deltaX > swipeThreshold) {
+                                break;
+                            } else if (swipeMode == SwipeListView.SWIPE_MODE_RIGHT && deltaX < swipeThreshold) {
+                                break;
                             }
                         }
                     }
 
-                    // Changes colors based on swipe direction and length.
-                    if (!longSwipeEnabled) {
-                        swipingRight = (deltaX > swipeThreshold);
-                        boolean swipingLeft = (deltaX < -swipeThreshold);
-
-                        if (swipingRight) {
-                            backView.setBackgroundColor(rightBackgroundColor);
-                        } else if (swipingLeft) {
-                            backView.setBackgroundColor(leftBackgroundColor);
-                        } else {
-                            backView.setBackgroundColor(neutralBackgroundColor);
-                        }
+                    if (longSwipeEnabled) {
+                        swipingRight = deltaX > swipeThreshold && deltaX < longSwipeThreshold;
+                        swipingLeft = deltaX < -swipeThreshold && deltaX > -longSwipeThreshold;
                     } else {
-                        swipingRight = (deltaX > swipeThreshold && deltaX < longSwipeThreshold);
-                        boolean swipingLongRight = (deltaX > longSwipeThreshold);
-                        boolean swipingLeft = (deltaX < -swipeThreshold && deltaX > -longSwipeThreshold);
-                        boolean swipingLongLeft = (deltaX < -longSwipeThreshold);
+                        swipingRight = deltaX > swipeThreshold;
+                        swipingLeft = deltaX < -swipeThreshold;
+                    }
 
-                        if (swipingRight) {
-                            backView.setBackgroundColor(rightBackgroundColor);
-                        } else if (swipingLeft) {
-                            backView.setBackgroundColor(leftBackgroundColor);
-                        } else if (swipingLongRight) {
+                    swipingLongRight = deltaX > longSwipeThreshold;
+                    swipingLongLeft = deltaX < -longSwipeThreshold;
+
+                    // Changes colors and actions based on swipe direction and length.
+                    if (swipingRight && swipeEnabledForDirection(SwipeDirections.RIGHT)) {
+                        backView.setBackgroundColor(rightBackgroundColor);
+
+                        if (swipeActionRight == SwipeListView.SWIPE_ACTION_DISMISS) {
+                            swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
+                        } else if (swipeActionRight == SwipeListView.SWIPE_ACTION_CHOICE) {
+                            swipeCurrentAction = SwipeListView.SWIPE_ACTION_CHOICE;
+                        } else if (swipeActionRight == SwipeListView.SWIPE_ACTION_REVEAL) {
+                            swipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                        }
+                    } else if (swipingLeft && swipeEnabledForDirection(SwipeDirections.LEFT)) {
+                        backView.setBackgroundColor(leftBackgroundColor);
+
+                        if (swipeActionLeft == SwipeListView.SWIPE_ACTION_DISMISS) {
+                            swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
+                        } else if (swipeActionLeft == SwipeListView.SWIPE_ACTION_CHOICE) {
+                            swipeCurrentAction = SwipeListView.SWIPE_ACTION_CHOICE;
+                        } else if (swipeActionLeft == SwipeListView.SWIPE_ACTION_REVEAL) {
+                            swipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                        }
+                    } else if (swipingLongRight) {
+                        if (longSwipeEnabledForDirection(SwipeDirections.RIGHT)) {
                             backView.setBackgroundColor(longRightBackgroundColor);
-                        } else if (swipingLongLeft) {
+                        } else {
+                            backView.setBackgroundColor(rightBackgroundColor);
+                        }
+
+                        if (longSwipeActionRight == SwipeListView.LONG_SWIPE_ACTION_DISMISS) {
+                            longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_DISMISS;
+                        } else if (longSwipeActionRight == SwipeListView.LONG_SWIPE_ACTION_REVEAL) {
+                            longSwipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                        }
+                    } else if (swipingLongLeft) {
+                        if (longSwipeEnabledForDirection(SwipeDirections.LEFT)) {
                             backView.setBackgroundColor(longLeftBackgroundColor);
                         } else {
-                            backView.setBackgroundColor(neutralBackgroundColor);
+                            backView.setBackgroundColor(leftBackgroundColor);
                         }
-                    }
 
-                    if (histDeltaX > 0) {
-                        currentSwipeDirection = SwipeDirections.RIGHT;
+                        if (longSwipeActionLeft == SwipeListView.LONG_SWIPE_ACTION_DISMISS) {
+                            longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_DISMISS;
+                        } else if (longSwipeActionLeft == SwipeListView.LONG_SWIPE_ACTION_REVEAL) {
+                            longSwipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                        }
                     } else {
-                        currentSwipeDirection = SwipeDirections.LEFT;
-                    }
-
-                    if (initialSwipeDirection == null) {
-                        initialSwipeDirection = currentSwipeDirection;
-                    }
-
-                    // Changes colors based on swipe direction change (i.e. "regret").
-                    if (didRegretSwipe()) {
                         backView.setBackgroundColor(neutralBackgroundColor);
                     }
 
-                    // TODO: Add long swipe actions.
-                    if (deltaMode > slop && swipeCurrentAction == SwipeListView.SWIPE_ACTION_NONE) {
+                    swipeListView.onStartOpen(downPosition, swipeCurrentAction, swipingRight);
+
+                    if (previousRawX > 0) {
+                        if (histDeltaX > 0) {
+                            currentSwipeDirection = SwipeDirections.RIGHT;
+                        } else {
+                            currentSwipeDirection = SwipeDirections.LEFT;
+                        }
+
+                        if (initialSwipeDirection == null) {
+                            initialSwipeDirection = currentSwipeDirection;
+                        }
+
+                        // Changes colors based on swipe direction change (i.e. "regret").
+                        if (didRegretSwipe()) {
+                            backView.setBackgroundColor(neutralBackgroundColor);
+                        }
+                    }
+
+                    if (deltaMode > slop) {
                         swiping = true;
                         Log.d("SwipeListView", "deltaX: " + deltaX + " - swipingRight: " + swipingRight);
+
                         if (opened.get(downPosition)) {
                             swipeListView.onStartClose(downPosition, swipingRight);
                             swipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
-                        } else {
-                            if (swipingRight && swipeActionRight == SwipeListView.SWIPE_ACTION_DISMISS) {
-                                swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
-                            } else if (!swipingRight && swipeActionLeft == SwipeListView.SWIPE_ACTION_DISMISS) {
-                                swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
-                            } else if (swipingRight && swipeActionRight == SwipeListView.SWIPE_ACTION_CHOICE) {
-                                swipeCurrentAction = SwipeListView.SWIPE_ACTION_CHOICE;
-                            } else if (!swipingRight && swipeActionLeft == SwipeListView.SWIPE_ACTION_CHOICE) {
-                                swipeCurrentAction = SwipeListView.SWIPE_ACTION_CHOICE;
-                            } else {
-                                swipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
-                            }
-                            swipeListView.onStartOpen(downPosition, swipeCurrentAction, swipingRight);
                         }
+
                         swipeListView.requestDisallowInterceptTouchEvent(true);
                         MotionEvent cancelEvent = MotionEvent.obtain(motionEvent);
                         cancelEvent.setAction(MotionEvent.ACTION_CANCEL |
@@ -1121,6 +1200,38 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         }
 
         resetPendingDismisses();
+    }
+
+    private boolean swipeEnabledForDirection(SwipeDirections direction) {
+        switch (direction) {
+            case RIGHT:
+                if (swipeMode == SwipeListView.SWIPE_MODE_RIGHT || swipeMode == SwipeListView.SWIPE_MODE_BOTH) {
+                    return true;
+                }
+                break;
+            case LEFT:
+                if (swipeMode == SwipeListView.SWIPE_MODE_LEFT || swipeMode == SwipeListView.SWIPE_MODE_BOTH) {
+                    return true;
+                }
+                break;
+        }
+        return false;
+    }
+
+    private boolean longSwipeEnabledForDirection(SwipeDirections direction) {
+        switch (direction) {
+            case RIGHT:
+                if (longSwipeMode == SwipeListView.SWIPE_MODE_RIGHT || longSwipeMode == SwipeListView.LONG_SWIPE_MODE_BOTH) {
+                    return true;
+                }
+                break;
+            case LEFT:
+                if (longSwipeMode == SwipeListView.LONG_SWIPE_MODE_LEFT || longSwipeMode == SwipeListView.LONG_SWIPE_MODE_BOTH) {
+                    return true;
+                }
+                break;
+        }
+        return false;
     }
 
     private boolean didRegretSwipe() {

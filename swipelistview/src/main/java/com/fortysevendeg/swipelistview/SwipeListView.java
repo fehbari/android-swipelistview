@@ -63,6 +63,21 @@ public class SwipeListView extends ListView {
     public final static int SWIPE_MODE_LEFT = 3;
 
     /**
+     * Enables left long swipe.
+     */
+    public final static int LONG_SWIPE_MODE_LEFT = 1;
+
+    /**
+     * Enables right long swipe.
+     */
+    public final static int LONG_SWIPE_MODE_RIGHT = 2;
+
+    /**
+     * Enables both left and right long swipe.
+     */
+    public final static int LONG_SWIPE_MODE_BOTH = 3;
+
+    /**
      * Binds the swipe gesture to reveal a view behind the row (Drawer style)
      */
     public final static int SWIPE_ACTION_REVEAL = 0;
@@ -81,6 +96,21 @@ public class SwipeListView extends ListView {
      * No action when swiped
      */
     public final static int SWIPE_ACTION_NONE = 3;
+
+    /**
+     * Binds the swipe gesture to reveal a view behind the row (Drawer style)
+     */
+    public final static int LONG_SWIPE_ACTION_REVEAL = 0;
+
+    /**
+     * Dismisses the cell when swiped over
+     */
+    public final static int LONG_SWIPE_ACTION_DISMISS = 1;
+
+    /**
+     * No action when long swiped
+     */
+    public final static int LONG_SWIPE_ACTION_NONE = 3;
 
     /**
      * Default ids for front view
@@ -551,6 +581,15 @@ public class SwipeListView extends ListView {
     }
 
     /**
+     * Set long swipe mode
+     *
+     * @param longSwipeMode
+     */
+    public void setLongSwipeMode(int longSwipeMode) {
+        touchListener.setLongSwipeMode(longSwipeMode);
+    }
+
+    /**
      * Return action on left
      *
      * @return Action
@@ -584,6 +623,24 @@ public class SwipeListView extends ListView {
      */
     public void setSwipeActionRight(int swipeActionRight) {
         touchListener.setSwipeActionRight(swipeActionRight);
+    }
+
+    /**
+     * Set long action on left
+     *
+     * @param longSwipeActionLeft Action
+     */
+    public void setLongSwipeActionLeft(int longSwipeActionLeft) {
+        touchListener.setLongSwipeActionLeft(longSwipeActionLeft);
+    }
+
+    /**
+     * Set long action on right
+     *
+     * @param longSwipeActionRight Action
+     */
+    public void setLongSwipeActionRight(int longSwipeActionRight) {
+        touchListener.setLongSwipeActionRight(longSwipeActionRight);
     }
 
     /**
