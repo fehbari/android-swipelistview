@@ -88,14 +88,9 @@ public class SwipeListView extends ListView {
     public final static int SWIPE_ACTION_DISMISS = 1;
 
     /**
-     * Marks the cell as checked when swiped and release
-     */
-    public final static int SWIPE_ACTION_CHOICE = 2;
-
-    /**
      * No action when swiped
      */
-    public final static int SWIPE_ACTION_NONE = 3;
+    public final static int SWIPE_ACTION_NONE = 2;
 
     /**
      * Binds the swipe gesture to reveal a view behind the row (Drawer style)
@@ -110,7 +105,7 @@ public class SwipeListView extends ListView {
     /**
      * No action when long swiped
      */
-    public final static int LONG_SWIPE_ACTION_NONE = 3;
+    public final static int LONG_SWIPE_ACTION_NONE = 2;
 
     /**
      * Default ids for front view
@@ -195,7 +190,6 @@ public class SwipeListView extends ListView {
     private void init(AttributeSet attrs) {
 
         int swipeMode = SWIPE_MODE_BOTH;
-        boolean swipeOpenOnLongPress = true;
         boolean swipeCloseAllItemsWhenMoveList = true;
         long swipeAnimationTime = 0;
         float swipeOffsetLeft = 0;
@@ -213,7 +207,6 @@ public class SwipeListView extends ListView {
             swipeActionRight = styled.getInt(R.styleable.SwipeListView_swipeActionRight, SWIPE_ACTION_REVEAL);
             swipeOffsetLeft = styled.getDimension(R.styleable.SwipeListView_swipeOffsetLeft, 0);
             swipeOffsetRight = styled.getDimension(R.styleable.SwipeListView_swipeOffsetRight, 0);
-            swipeOpenOnLongPress = styled.getBoolean(R.styleable.SwipeListView_swipeOpenOnLongPress, true);
             swipeAnimationTime = styled.getInteger(R.styleable.SwipeListView_swipeAnimationTime, 0);
             swipeCloseAllItemsWhenMoveList = styled.getBoolean(R.styleable.SwipeListView_swipeCloseAllItemsWhenMoveList, true);
             swipeDrawableChecked = styled.getResourceId(R.styleable.SwipeListView_swipeDrawableChecked, 0);
@@ -243,30 +236,8 @@ public class SwipeListView extends ListView {
         touchListener.setSwipeActionRight(swipeActionRight);
         touchListener.setSwipeMode(swipeMode);
         touchListener.setSwipeClosesAllItemsWhenListMoves(swipeCloseAllItemsWhenMoveList);
-        touchListener.setSwipeDrawableChecked(swipeDrawableChecked);
-        touchListener.setSwipeDrawableUnchecked(swipeDrawableUnchecked);
         setOnTouchListener(touchListener);
         setOnScrollListener(touchListener.makeScrollListener());
-    }
-
-    /**
-     * Recycle cell. This method should be called from getView in Adapter when use SWIPE_ACTION_CHOICE
-     *
-     * @param convertView parent view
-     * @param position    position in list
-     */
-    public void recycle(View convertView, int position) {
-        touchListener.reloadChoiceStateInView(convertView.findViewById(swipeFrontView), position);
-    }
-
-    /**
-     * Get if item is selected
-     *
-     * @param position position in list
-     * @return
-     */
-    public boolean isChecked(int position) {
-        return touchListener.isChecked(position);
     }
 
     /**
@@ -285,13 +256,6 @@ public class SwipeListView extends ListView {
      */
     public int getCountSelected() {
         return touchListener.getCountSelected();
-    }
-
-    /**
-     * Unselected choice state in item
-     */
-    public void unselectedChoiceStates() {
-        touchListener.unselectedChoiceStates();
     }
 
     /**
@@ -349,7 +313,6 @@ public class SwipeListView extends ListView {
             onDismiss(dismissPositions);
             touchListener.resetPendingDismisses();
         }
-        touchListener.returnOldActions();
     }
 
     /**
