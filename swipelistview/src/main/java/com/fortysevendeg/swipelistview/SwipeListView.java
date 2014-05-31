@@ -25,7 +25,6 @@ import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewConfigurationCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -481,6 +480,50 @@ public class SwipeListView extends ListView {
     protected void onMove(int position, float x) {
         if (swipeListViewListener != null && position != ListView.INVALID_POSITION) {
             swipeListViewListener.onMove(position, x);
+        }
+    }
+
+    /**
+     * Called when an item has been swiped to the right.
+     *
+     * @param position Position of the item.
+     */
+    protected void onFinishedSwipeRight(int position) {
+        if (swipeListViewListener != null && position != ListView.INVALID_POSITION) {
+            swipeListViewListener.onFinishedSwipeRight(position);
+        }
+    }
+
+    /**
+     * Called when an item has been swiped to the left.
+     *
+     * @param position Position of the item.
+     */
+    protected void onFinishedSwipeLeft(int position) {
+        if (swipeListViewListener != null && position != ListView.INVALID_POSITION) {
+            swipeListViewListener.onFinishedSwipeLeft(position);
+        }
+    }
+
+    /**
+     * Called when an item has been long swiped to the right.
+     *
+     * @param position Position of the item.
+     */
+    protected void onFinishedLongSwipeRight(int position) {
+        if (swipeListViewListener != null && position != ListView.INVALID_POSITION) {
+            swipeListViewListener.onFinishedLongSwipeRight(position);
+        }
+    }
+
+    /**
+     * Called when an item has been long swiped to the left.
+     *
+     * @param position Position of the item.
+     */
+    protected void onFinishedLongSwipeLeft(int position) {
+        if (swipeListViewListener != null && position != ListView.INVALID_POSITION) {
+            swipeListViewListener.onFinishedLongSwipeLeft(position);
         }
     }
 

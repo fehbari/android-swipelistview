@@ -61,4 +61,20 @@ public class BaseSwipeListViewListener implements SwipeListViewListener {
     @Override
     public void onLastListItem() {
     }
+
+    @Override
+    public void onFinishedSwipeRight(int position) {
+    }
+
+    @Override
+    public void onFinishedSwipeLeft(int position) {
+    }
+
+    @Override
+    public void onFinishedLongSwipeRight(int position) {
+    }
+
+    @Override
+    public void onFinishedLongSwipeLeft(int position) {
+    }
 }
