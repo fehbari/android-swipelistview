@@ -856,6 +856,10 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         }
                     }
 
+                    // Reset current actions.
+                    swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
+                    longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_NONE;
+
                     if (longSwipeEnabled) {
                         swipingRight = deltaX > swipeThreshold && deltaX < longSwipeThreshold;
                         swipingLeft = deltaX < -swipeThreshold && deltaX > -longSwipeThreshold;
