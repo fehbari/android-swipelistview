@@ -35,9 +35,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 
-import com.fortysevendeg.swipelistview.SwipeListView;
-
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The dynamic listview is an extension of SwipeListView that supports
@@ -67,7 +65,7 @@ public class DynamicListView extends SwipeListView {
     private final int LINE_THICKNESS = 15;
     private final float BITMAP_SCALE = 0.9f;
 
-    public ArrayList<String> mContentList;
+    public List mContentList;
 
     private int mLastEventY = -1;
 
@@ -396,10 +394,10 @@ public class DynamicListView extends SwipeListView {
         }
     }
 
-    private void swapElements(ArrayList arrayList, int indexOne, int indexTwo) {
-        Object temp = arrayList.get(indexOne);
-        arrayList.set(indexOne, arrayList.get(indexTwo));
-        arrayList.set(indexTwo, temp);
+    private void swapElements(List list, int indexOne, int indexTwo) {
+        Object temp = list.get(indexOne);
+        list.set(indexOne, list.get(indexTwo));
+        list.set(indexTwo, temp);
     }
 
     /**
@@ -524,7 +522,7 @@ public class DynamicListView extends SwipeListView {
         return false;
     }
 
-    public void setContentList(ArrayList<String> contentList) {
+    public void setContentList(List contentList) {
         mContentList = contentList;
     }
 
