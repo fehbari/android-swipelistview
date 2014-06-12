@@ -94,8 +94,8 @@ public class DynamicListView extends SwipeListView {
     private boolean mIsWaitingForScrollFinish = false;
     private int mScrollState = OnScrollListener.SCROLL_STATE_IDLE;
 
-    public DynamicListView(Context context, int swipeBackView, int swipeFrontView) {
-        super(context, swipeBackView, swipeFrontView);
+    public DynamicListView(Context context, int swipeBackView, int swipeFrontView, int swipeBackIconLeft, int swipeBackIconRight) {
+        super(context, swipeBackView, swipeFrontView, swipeBackIconLeft, swipeBackIconRight);
         init(context);
     }
 
@@ -137,6 +137,28 @@ public class DynamicListView extends SwipeListView {
     public void setLongSwipeBackgroundColors(int rightLongColor, int leftLongColor) {
         getTouchListener().setLongRightBackgroundColor(rightLongColor);
         getTouchListener().setLongLeftBackgroundColor(leftLongColor);
+    }
+
+    /**
+     * Sets the icon font text resources for the back icon when short swiping.
+     *
+     * @param rightText Resource for the right swipe icon.
+     * @param leftText  Resource for the left swipe icon.
+     */
+    public void setBackIconText(int rightText, int leftText) {
+        getTouchListener().setBackIconRightText(rightText);
+        getTouchListener().setBackIconLeftText(leftText);
+    }
+
+    /**
+     * Sets the icon font text resources for the back icon when long swiping.
+     *
+     * @param longRightText Resource for the long right swipe icon.
+     * @param longLeftText  Resource for the long left swipe icon.
+     */
+    public void setLongSwipeBackIconText(int longRightText, int longLeftText) {
+        getTouchListener().setBackIconLongRightText(longRightText);
+        getTouchListener().setBackIconLongLeftText(longLeftText);
     }
 
     /**

@@ -32,6 +32,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorListenerAdapter;
@@ -60,6 +61,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
     private int swipeFrontView = 0;
     private int swipeBackView = 0;
+    private int swipeBackIconLeft = 0;
+    private int swipeBackIconRight = 0;
 
     private Rect rect = new Rect();
 
@@ -95,6 +98,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private View parentView;
     private View frontView;
     private View backView;
+    private View backIconLeft;
+    private View backIconRight;
     private boolean paused;
 
     private int swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
@@ -117,6 +122,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private int longLeftBackgroundColor;
     private int neutralBackgroundColor;
 
+    private int backIconRightText;
+    private int backIconLongRightText;
+    private int backIconLeftText;
+    private int backIconLongLeftText;
+
     private boolean longSwipeEnabled;
 
     private int animationMoveTo;
@@ -136,10 +146,12 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      * @param swipeFrontView front view Identifier
      * @param swipeBackView  back view Identifier
      */
-    public SwipeListViewTouchListener(SwipeListView swipeListView, int swipeFrontView, int swipeBackView) {
+    public SwipeListViewTouchListener(SwipeListView swipeListView, int swipeFrontView, int swipeBackView, int swipeBackIconLeft, int swipeBackIconRight) {
         context = swipeListView.getContext();
         this.swipeFrontView = swipeFrontView;
         this.swipeBackView = swipeBackView;
+        this.swipeBackIconLeft = swipeBackIconLeft;
+        this.swipeBackIconRight = swipeBackIconRight;
         ViewConfiguration vc = ViewConfiguration.get(swipeListView.getContext());
         slop = vc.getScaledTouchSlop();
         configShortAnimationTime = swipeListView.getContext().getResources().getInteger(android.R.integer.config_shortAnimTime);
@@ -187,6 +199,24 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 swipeListView.onClickBackView(downPosition);
             }
         });
+    }
+
+    /**
+     * Set current item's left back view icon
+     *
+     * @param backIconLeft
+     */
+    private void setBackIconLeft(View backIconLeft) {
+        this.backIconLeft = backIconLeft;
+    }
+
+    /**
+     * Set current item's right back view icon
+     *
+     * @param backIconRight
+     */
+    private void setBackIconRight(View backIconRight) {
+        this.backIconRight = backIconRight;
     }
 
     /**
@@ -360,6 +390,42 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     public void setNeutralBackgroundColor(int backgroundColor) {
         neutralBackgroundColor = backgroundColor;
+    }
+
+    /**
+     * Set the icon font text for the back icon when swiping to the right.
+     *
+     * @param backIconRightText Text to set.
+     */
+    public void setBackIconRightText(int backIconRightText) {
+        this.backIconRightText = backIconRightText;
+    }
+
+    /**
+     * Set the icon font text for the back icon when long swiping to the right.
+     *
+     * @param backIconLongRightText Text to set.
+     */
+    public void setBackIconLongRightText(int backIconLongRightText) {
+        this.backIconLongRightText = backIconLongRightText;
+    }
+
+    /**
+     * Set the icon font text for the back icon when swiping to the left.
+     *
+     * @param backIconLeftText Text to set.
+     */
+    public void setBackIconLeftText(int backIconLeftText) {
+        this.backIconLeftText = backIconLeftText;
+    }
+
+    /**
+     * Set the icon font text for the back icon when long swiping to the left.
+     *
+     * @param backIconLongLeftText Text to set.
+     */
+    public void setBackIconLongLeftText(int backIconLongLeftText) {
+        this.backIconLongLeftText = backIconLongLeftText;
     }
 
     /**
@@ -619,6 +685,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
             frontView.setClickable(opened.get(downPosition));
             frontView = null;
             backView = null;
+            backView = null;
             downPosition = ListView.INVALID_POSITION;
         }
     }
@@ -759,6 +826,14 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         if (swipeBackView > 0) {
                             setBackView(child.findViewById(swipeBackView));
                         }
+
+                        if (swipeBackIconLeft > 0) {
+                            setBackIconLeft(child.findViewById(swipeBackIconLeft));
+                        }
+
+                        if (swipeBackIconRight > 0) {
+                            setBackIconRight(child.findViewById(swipeBackIconRight));
+                        }
                         break;
                     }
                 }
@@ -860,6 +935,12 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
                     longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_NONE;
 
+                    // Reset back icons.
+                    backIconLeft.setVisibility(View.VISIBLE);
+                    backIconRight.setVisibility(View.VISIBLE);
+                    ((TextView) backIconLeft).setText(null);
+                    ((TextView) backIconRight).setText(null);
+
                     if (longSwipeEnabled) {
                         swipingRight = deltaX > swipeThreshold && deltaX < longSwipeThreshold;
                         swipingLeft = deltaX < -swipeThreshold && deltaX > -longSwipeThreshold;
@@ -874,6 +955,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     // Changes colors and actions based on swipe direction and length.
                     if (swipingRight && swipeEnabledForDirection(SwipeDirections.RIGHT)) {
                         backView.setBackgroundColor(rightBackgroundColor);
+                        ((TextView) backIconLeft).setText(context.getString(backIconRightText));
 
                         if (swipeActionRight == SwipeListView.SWIPE_ACTION_DISMISS) {
                             swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
@@ -882,6 +964,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         }
                     } else if (swipingLeft && swipeEnabledForDirection(SwipeDirections.LEFT)) {
                         backView.setBackgroundColor(leftBackgroundColor);
+                        ((TextView) backIconRight).setText(context.getString(backIconLeftText));
 
                         if (swipeActionLeft == SwipeListView.SWIPE_ACTION_DISMISS) {
                             swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
@@ -891,8 +974,10 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     } else if (swipingLongRight) {
                         if (longSwipeEnabledForDirection(SwipeDirections.RIGHT)) {
                             backView.setBackgroundColor(longRightBackgroundColor);
+                            ((TextView) backIconLeft).setText(context.getString(backIconLongRightText));
                         } else {
                             backView.setBackgroundColor(rightBackgroundColor);
+                            ((TextView) backIconLeft).setText(context.getString(backIconRightText));
                         }
 
                         if (longSwipeActionRight == SwipeListView.LONG_SWIPE_ACTION_DISMISS) {
@@ -903,8 +988,10 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     } else if (swipingLongLeft) {
                         if (longSwipeEnabledForDirection(SwipeDirections.LEFT)) {
                             backView.setBackgroundColor(longLeftBackgroundColor);
+                            ((TextView) backIconRight).setText(context.getString(backIconLongLeftText));
                         } else {
                             backView.setBackgroundColor(leftBackgroundColor);
+                            ((TextView) backIconRight).setText(context.getString(backIconLeftText));
                         }
 
                         if (longSwipeActionLeft == SwipeListView.LONG_SWIPE_ACTION_DISMISS) {
@@ -929,9 +1016,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             initialSwipeDirection = currentSwipeDirection;
                         }
 
-                        // Changes colors based on swipe direction change (i.e. "regret").
+                        // Changes back view based on swipe direction change (i.e. "regret").
                         if (didRegretSwipe()) {
                             backView.setBackgroundColor(neutralBackgroundColor);
+                            backIconLeft.setVisibility(View.GONE);
+                            backIconRight.setVisibility(View.GONE);
                             swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
                             longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_NONE;
                         }
@@ -978,6 +1067,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         swipeListView.onMove(downPosition, deltaX);
         backView.setVisibility(View.VISIBLE);
         setTranslationX(frontView, deltaX);
+        setTranslationX(backIconLeft, deltaX);
+        setTranslationX(backIconRight, deltaX);
     }
 
     /**

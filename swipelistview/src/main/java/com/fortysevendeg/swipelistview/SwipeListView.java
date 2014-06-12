@@ -117,6 +117,11 @@ public class SwipeListView extends ListView {
     public final static String SWIPE_DEFAULT_BACK_VIEW = "swipelist_backview";
 
     /**
+     * Default id for back view icon
+     */
+    public final static String SWIPE_DEFAULT_BACK_VIEW_ICON = "swipelist_backview_icon";
+
+    /**
      * Indicates no movement
      */
     private final static int TOUCH_STATE_REST = 0;
@@ -139,6 +144,8 @@ public class SwipeListView extends ListView {
 
     int swipeFrontView = 0;
     int swipeBackView = 0;
+    int swipeBackIconLeft = 0;
+    int swipeBackIconRight = 0;
 
     /**
      * Internal listener for common swipe events
@@ -158,10 +165,12 @@ public class SwipeListView extends ListView {
      * @param swipeBackView  Back Identifier
      * @param swipeFrontView Front Identifier
      */
-    public SwipeListView(Context context, int swipeBackView, int swipeFrontView) {
+    public SwipeListView(Context context, int swipeBackView, int swipeFrontView, int swipeBackIconLeft, int swipeBackIconRight) {
         super(context);
         this.swipeFrontView = swipeFrontView;
         this.swipeBackView = swipeBackView;
+        this.swipeBackIconLeft = swipeBackIconLeft;
+        this.swipeBackIconRight = swipeBackIconRight;
         init(null);
     }
 
@@ -212,20 +221,23 @@ public class SwipeListView extends ListView {
             swipeDrawableUnchecked = styled.getResourceId(R.styleable.SwipeListView_swipeDrawableUnchecked, 0);
             swipeFrontView = styled.getResourceId(R.styleable.SwipeListView_swipeFrontView, 0);
             swipeBackView = styled.getResourceId(R.styleable.SwipeListView_swipeBackView, 0);
+            swipeBackIconLeft = styled.getResourceId(R.styleable.SwipeListView_swipeBackIconLeft, 0);
+            swipeBackIconRight = styled.getResourceId(R.styleable.SwipeListView_swipeBackIconRight, 0);
         }
 
         if (swipeFrontView == 0 || swipeBackView == 0) {
             swipeFrontView = getContext().getResources().getIdentifier(SWIPE_DEFAULT_FRONT_VIEW, "id", getContext().getPackageName());
             swipeBackView = getContext().getResources().getIdentifier(SWIPE_DEFAULT_BACK_VIEW, "id", getContext().getPackageName());
+            swipeBackIconLeft = getContext().getResources().getIdentifier(SWIPE_DEFAULT_BACK_VIEW_ICON, "id", getContext().getPackageName());
 
-            if (swipeFrontView == 0 || swipeBackView == 0) {
-                throw new RuntimeException(String.format("You forgot the attributes swipeFrontView or swipeBackView. You can add this attributes or use '%s' and '%s' identifiers", SWIPE_DEFAULT_FRONT_VIEW, SWIPE_DEFAULT_BACK_VIEW));
+            if (swipeFrontView == 0 || swipeBackView == 0 || swipeBackIconLeft == 0) {
+                throw new RuntimeException(String.format("You forgot the attributes swipeFrontView, swipeBackView or swipeBackIconLeft. You can add this attributes or use '%s' and '%s' identifiers", SWIPE_DEFAULT_FRONT_VIEW, SWIPE_DEFAULT_BACK_VIEW));
             }
         }
 
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         touchSlop = ViewConfigurationCompat.getScaledPagingTouchSlop(configuration);
-        touchListener = new SwipeListViewTouchListener(this, swipeFrontView, swipeBackView);
+        touchListener = new SwipeListViewTouchListener(this, swipeFrontView, swipeBackView, swipeBackIconLeft, swipeBackIconRight);
         if (swipeAnimationTime > 0) {
             touchListener.setAnimationTime(swipeAnimationTime);
         }
