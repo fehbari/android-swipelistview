@@ -703,6 +703,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             closeOpenedItems();
                             performDismiss(parentView, position, true);
                         }
+                        triggerAction();
                         resetCell();
                     }
                 });
@@ -746,6 +747,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                                 swipeListView.onClosed(position, openedRight.get(position));
                             }
                         }
+                        triggerAction();
                         resetCell();
                     }
                 });
@@ -943,21 +945,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 }
 
                 generateAnimate(frontView, swap, swapRight, downPosition);
-
-                // Trigger actions for each swiping state.
-                if (swipeCurrentAction != SwipeListView.SWIPE_ACTION_NONE) {
-                    if (swipingRight && swipeEnabledForDirection(SwipeDirections.RIGHT)) {
-                        swipeListView.onFinishedSwipeRight(downPosition);
-                    } else if (swipingLeft && swipeEnabledForDirection(SwipeDirections.LEFT)) {
-                        swipeListView.onFinishedSwipeLeft(downPosition);
-                    }
-                } else if (longSwipeCurrentAction != SwipeListView.LONG_SWIPE_ACTION_NONE) {
-                    if (swipingLongRight && longSwipeEnabledForDirection(SwipeDirections.RIGHT)) {
-                        swipeListView.onFinishedLongSwipeRight(downPosition);
-                    } else if (swipingLongLeft && longSwipeEnabledForDirection(SwipeDirections.LEFT)) {
-                        swipeListView.onFinishedLongSwipeLeft(downPosition);
-                    }
-                }
 
                 // Interaction is done, reset state variables.
                 downX = 0;
@@ -1247,6 +1234,23 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         }
 
         resetPendingDismisses();
+    }
+
+    private void triggerAction() {
+        // Trigger actions for each swiping state.
+        if (swipeCurrentAction != SwipeListView.SWIPE_ACTION_NONE) {
+            if (swipingRight && swipeEnabledForDirection(SwipeDirections.RIGHT)) {
+                swipeListView.onFinishedSwipeRight(downPosition);
+            } else if (swipingLeft && swipeEnabledForDirection(SwipeDirections.LEFT)) {
+                swipeListView.onFinishedSwipeLeft(downPosition);
+            }
+        } else if (longSwipeCurrentAction != SwipeListView.LONG_SWIPE_ACTION_NONE) {
+            if (swipingLongRight && longSwipeEnabledForDirection(SwipeDirections.RIGHT)) {
+                swipeListView.onFinishedLongSwipeRight(downPosition);
+            } else if (swipingLongLeft && longSwipeEnabledForDirection(SwipeDirections.LEFT)) {
+                swipeListView.onFinishedLongSwipeLeft(downPosition);
+            }
+        }
     }
 
     private boolean swipeEnabledForDirection(SwipeDirections direction) {
