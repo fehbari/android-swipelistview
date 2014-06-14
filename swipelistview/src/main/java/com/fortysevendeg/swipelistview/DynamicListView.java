@@ -162,6 +162,39 @@ public class DynamicListView extends SwipeListView {
     }
 
     /**
+     * Set the front view icon.
+     *
+     * @param frontIcon Icon to set.
+     */
+    public void setFrontIcon(int frontIcon) {
+        getTouchListener().setSwipeFrontIcon(frontIcon);
+    }
+
+    /**
+     * Sets background resources for front icon during swipe gestures.
+     *
+     * @param rightBackground   Right swipe gesture background.
+     * @param leftBackground    Left swipe gesture background.
+     * @param defaultBackground Default background.
+     */
+    public void setFrontIconBackgrounds(int rightBackground, int leftBackground, int defaultBackground) {
+        getTouchListener().setFrontIconRightBackground(rightBackground);
+        getTouchListener().setFrontIconLeftBackground(leftBackground);
+        getTouchListener().setFrontIconBackground(defaultBackground);
+    }
+
+    /**
+     * Sets background resources for front icon during long swipe gestures.
+     *
+     * @param longRightBackground Long right swipe gesture background.
+     * @param longLeftBackground  Long left swipe gesture background.
+     */
+    public void setFrontIconLongSwipeBackgrounds(int longRightBackground, int longLeftBackground) {
+        getTouchListener().setFrontIconLongRightBackground(longRightBackground);
+        getTouchListener().setFrontIconLongLeftBackground(longLeftBackground);
+    }
+
+    /**
      * Enables or disables long swipes in the list.
      *
      * @param enabled True to enable, false otherwise.

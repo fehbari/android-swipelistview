@@ -63,6 +63,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private int swipeBackView = 0;
     private int swipeBackIconLeft = 0;
     private int swipeBackIconRight = 0;
+    private int swipeFrontIcon = 0;
 
     private Rect rect = new Rect();
 
@@ -100,6 +101,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private View backView;
     private View backIconLeft;
     private View backIconRight;
+    private View frontIcon;
     private boolean paused;
 
     private int swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
@@ -121,6 +123,12 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private int leftBackgroundColor;
     private int longLeftBackgroundColor;
     private int neutralBackgroundColor;
+
+    private int frontIconBackground;
+    private int frontIconRightBackground;
+    private int frontIconLongRightBackground;
+    private int frontIconLeftBackground;
+    private int frontIconLongLeftBackground;
 
     private int backIconRightText;
     private int backIconLongRightText;
@@ -189,7 +197,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     /**
      * Set current item's back view
      *
-     * @param backView
+     * @param backView Back view
      */
     private void setBackView(View backView) {
         this.backView = backView;
@@ -204,7 +212,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     /**
      * Set current item's left back view icon
      *
-     * @param backIconLeft
+     * @param backIconLeft Left back view icon
      */
     private void setBackIconLeft(View backIconLeft) {
         this.backIconLeft = backIconLeft;
@@ -213,10 +221,28 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     /**
      * Set current item's right back view icon
      *
-     * @param backIconRight
+     * @param backIconRight Right back view icon
      */
     private void setBackIconRight(View backIconRight) {
         this.backIconRight = backIconRight;
+    }
+
+    /**
+     * Set the front view icon resource.
+     *
+     * @param swipeFrontIcon Icon resource to set.
+     */
+    public void setSwipeFrontIcon(int swipeFrontIcon) {
+        this.swipeFrontIcon = swipeFrontIcon;
+    }
+
+    /**
+     * Set the front view icon.
+     *
+     * @param frontIcon Icon to set.
+     */
+    public void setFrontIcon(View frontIcon) {
+        this.frontIcon = frontIcon;
     }
 
     /**
@@ -390,6 +416,51 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     public void setNeutralBackgroundColor(int backgroundColor) {
         neutralBackgroundColor = backgroundColor;
+    }
+
+    /**
+     * Set the resource for the front view icon background.
+     *
+     * @param frontIconBackground Resource to set.
+     */
+    public void setFrontIconBackground(int frontIconBackground) {
+        this.frontIconBackground = frontIconBackground;
+    }
+
+    /**
+     * Set the resource for the front view icon background when swiping right.
+     *
+     * @param frontIconRightBackground Resource to set.
+     */
+    public void setFrontIconRightBackground(int frontIconRightBackground) {
+        this.frontIconRightBackground = frontIconRightBackground;
+    }
+
+    /**
+     * Set the resource for the front view icon background when long swiping right.
+     *
+     * @param frontIconLongRightBackground Resource to set.
+     */
+    public void setFrontIconLongRightBackground(int frontIconLongRightBackground) {
+        this.frontIconLongRightBackground = frontIconLongRightBackground;
+    }
+
+    /**
+     * Set the resource for the front view icon background when swiping left.
+     *
+     * @param frontIconLeftBackground Resource to set.
+     */
+    public void setFrontIconLeftBackground(int frontIconLeftBackground) {
+        this.frontIconLeftBackground = frontIconLeftBackground;
+    }
+
+    /**
+     * Set the resource for the front view icon background when long swiping left.
+     *
+     * @param frontIconLongLeftBackground Resource to set.
+     */
+    public void setFrontIconLongLeftBackground(int frontIconLongLeftBackground) {
+        this.frontIconLongLeftBackground = frontIconLongLeftBackground;
     }
 
     /**
@@ -834,6 +905,10 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         if (swipeBackIconRight > 0) {
                             setBackIconRight(child.findViewById(swipeBackIconRight));
                         }
+
+                        if (swipeFrontIcon > 0) {
+                            setFrontIcon(child.findViewById(swipeFrontIcon));
+                        }
                         break;
                     }
                 }
@@ -955,6 +1030,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     // Changes colors and actions based on swipe direction and length.
                     if (swipingRight && swipeEnabledForDirection(SwipeDirections.RIGHT)) {
                         backView.setBackgroundColor(rightBackgroundColor);
+                        frontIcon.setBackgroundResource(frontIconRightBackground);
                         ((TextView) backIconLeft).setText(context.getString(backIconRightText));
 
                         if (swipeActionRight == SwipeListView.SWIPE_ACTION_DISMISS) {
@@ -964,6 +1040,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         }
                     } else if (swipingLeft && swipeEnabledForDirection(SwipeDirections.LEFT)) {
                         backView.setBackgroundColor(leftBackgroundColor);
+                        frontIcon.setBackgroundResource(frontIconLeftBackground);
                         ((TextView) backIconRight).setText(context.getString(backIconLeftText));
 
                         if (swipeActionLeft == SwipeListView.SWIPE_ACTION_DISMISS) {
@@ -974,9 +1051,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     } else if (swipingLongRight) {
                         if (longSwipeEnabledForDirection(SwipeDirections.RIGHT)) {
                             backView.setBackgroundColor(longRightBackgroundColor);
+                            frontIcon.setBackgroundResource(frontIconLongRightBackground);
                             ((TextView) backIconLeft).setText(context.getString(backIconLongRightText));
                         } else {
                             backView.setBackgroundColor(rightBackgroundColor);
+                            frontIcon.setBackgroundResource(frontIconRightBackground);
                             ((TextView) backIconLeft).setText(context.getString(backIconRightText));
                         }
 
@@ -988,9 +1067,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     } else if (swipingLongLeft) {
                         if (longSwipeEnabledForDirection(SwipeDirections.LEFT)) {
                             backView.setBackgroundColor(longLeftBackgroundColor);
+                            frontIcon.setBackgroundResource(frontIconLongLeftBackground);
                             ((TextView) backIconRight).setText(context.getString(backIconLongLeftText));
                         } else {
                             backView.setBackgroundColor(leftBackgroundColor);
+                            frontIcon.setBackgroundResource(frontIconLeftBackground);
                             ((TextView) backIconRight).setText(context.getString(backIconLeftText));
                         }
 
@@ -1019,6 +1100,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         // Changes back view based on swipe direction change (i.e. "regret").
                         if (didRegretSwipe()) {
                             backView.setBackgroundColor(neutralBackgroundColor);
+                            frontIcon.setBackgroundResource(frontIconBackground);
                             backIconLeft.setVisibility(View.GONE);
                             backIconRight.setVisibility(View.GONE);
                             swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
