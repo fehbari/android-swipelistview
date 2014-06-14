@@ -632,12 +632,18 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     private void generateAnimate(final View view, final boolean swap, final boolean swapRight, final int position) {
         Log.d("SwipeListView", "swap: " + swap + " - swapRight: " + swapRight + " - position: " + position);
+
+        // Determines the icon to animate alongside the front view.
+        View icon = swapRight ? backIconLeft : backIconRight;
+
         if (swipingRight || swipingLeft) {
             if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_REVEAL) {
                 generateRevealAnimate(view, swap, swapRight, position);
+                animateIconReveal(icon, swapRight);
             }
             if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_DISMISS) {
                 generateDismissAnimate(frontView, swap, swapRight, position);
+                animateIconDismiss(icon, swapRight);
             }
             if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_NONE) {
                 generateNoActionAnimate(view, position);
@@ -645,9 +651,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         } else if (swipingLongRight || swipingLongLeft) {
             if (longSwipeCurrentAction == SwipeListView.LONG_SWIPE_ACTION_REVEAL) {
                 generateRevealAnimate(view, swap, swapRight, position);
+                animateIconReveal(icon, swapRight);
             }
             if (longSwipeCurrentAction == SwipeListView.LONG_SWIPE_ACTION_DISMISS) {
                 generateDismissAnimate(frontView, swap, swapRight, position);
+                animateIconDismiss(icon, swapRight);
             }
         } else {
             generateNoActionAnimate(view, position);
@@ -710,6 +718,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
     }
 
+    private void animateIconDismiss(View view, boolean swapRight) {
+        int moveTo = swapRight ? (int) (viewWidth - rightOffset) : (int) (-viewWidth + leftOffset);
+
+        animate(view)
+                .translationX(animationMoveTo)
+                .setDuration(animationTime)
+                .setListener(null);
+    }
+
     /**
      * Create reveal animation
      *
@@ -751,6 +768,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         resetCell();
                     }
                 });
+    }
+
+    private void animateIconReveal(View view, boolean swapRight) {
+        int moveTo = swapRight ? (int) (viewWidth - rightOffset) : (int) (-viewWidth + leftOffset);
+
+        animate(view)
+                .translationX(moveTo)
+                .setDuration(animationTime)
+                .setListener(null);
     }
 
     private void resetCell() {
