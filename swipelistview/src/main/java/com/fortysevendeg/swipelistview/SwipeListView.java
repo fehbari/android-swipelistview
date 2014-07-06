@@ -25,6 +25,7 @@ import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewConfigurationCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -383,22 +384,24 @@ public class SwipeListView extends ListView {
     /**
      * Notifies onClickFrontView
      *
+     * @param view     view clicked
      * @param position item clicked
      */
-    protected void onClickFrontView(int position) {
+    protected void onClickFrontView(View view, int position) {
         if (swipeListViewListener != null && position != ListView.INVALID_POSITION) {
-            swipeListViewListener.onClickFrontView(position);
+            swipeListViewListener.onClickFrontView(view, position);
         }
     }
 
     /**
      * Notifies onClickBackView
      *
-     * @param position back item clicked
+     * @param view     view clicked
+     * @param position item clicked
      */
-    protected void onClickBackView(int position) {
+    protected void onClickBackView(View view, int position) {
         if (swipeListViewListener != null && position != ListView.INVALID_POSITION) {
-            swipeListViewListener.onClickBackView(position);
+            swipeListViewListener.onClickBackView(view, position);
         }
     }
 

@@ -189,7 +189,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         frontView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                swipeListView.onClickFrontView(downPosition);
+                swipeListView.onClickFrontView(v, downPosition);
             }
         });
     }
@@ -204,7 +204,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         backView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                swipeListView.onClickBackView(downPosition);
+                swipeListView.onClickBackView(v, downPosition);
             }
         });
     }

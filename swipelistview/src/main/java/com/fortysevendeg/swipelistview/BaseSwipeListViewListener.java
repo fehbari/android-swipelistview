@@ -1,5 +1,7 @@
 package com.fortysevendeg.swipelistview;
 
+import android.view.View;
+
 public class BaseSwipeListViewListener implements SwipeListViewListener {
     @Override
     public void onOpened(int position, boolean toRight) {
@@ -26,11 +28,11 @@ public class BaseSwipeListViewListener implements SwipeListViewListener {
     }
 
     @Override
-    public void onClickFrontView(int position) {
+    public void onClickFrontView(View view, int position) {
     }
 
     @Override
-    public void onClickBackView(int position) {
+    public void onClickBackView(View view, int position) {
     }
 
     @Override

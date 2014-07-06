@@ -236,22 +236,23 @@ public class DynamicListView extends SwipeListView {
     private AdapterView.OnItemLongClickListener mOnItemLongClickListener =
             new AdapterView.OnItemLongClickListener() {
                 public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
-                    mTotalOffset = 0;
+                    if (mDragAndDropEnabled) {
+                        mTotalOffset = 0;
 
-                    int position = pointToPosition(mDownX, mDownY);
-                    int itemNum = position - getFirstVisiblePosition();
+                        int position = pointToPosition(mDownX, mDownY);
+                        int itemNum = position - getFirstVisiblePosition();
 
-                    View selectedView = getChildAt(itemNum);
-                    mMobileItemId = getAdapter().getItemId(position);
-                    mMobileView = getViewForID(mMobileItemId);
-                    mHoverCell = getAndAddScaledHoverView(selectedView);
-                    selectedView.setVisibility(INVISIBLE);
+                        View selectedView = getChildAt(itemNum);
+                        mMobileItemId = getAdapter().getItemId(position);
+                        mMobileView = getViewForID(mMobileItemId);
+                        mHoverCell = getAndAddScaledHoverView(selectedView);
+                        selectedView.setVisibility(INVISIBLE);
 
-                    mCellIsMobile = true;
+                        mCellIsMobile = true;
 
-                    updateNeighborViewsForID(mMobileItemId);
-
-                    return true;
+                        updateNeighborViewsForID(mMobileItemId);
+                    }
+                    return mDragAndDropEnabled;
                 }
             };
 

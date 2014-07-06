@@ -18,6 +18,8 @@
 
 package com.fortysevendeg.swipelistview;
 
+import android.view.View;
+
 /**
  * Listener to get callback notifications for the SwipeListView
  */
@@ -72,16 +74,18 @@ public interface SwipeListViewListener {
     /**
      * Called when user clicks on the front view
      *
+     * @param view     view clicked
      * @param position list item
      */
-    void onClickFrontView(int position);
+    void onClickFrontView(View view, int position);
 
     /**
      * Called when user clicks on the back view
      *
+     * @param view     view clicked
      * @param position list item
      */
-    void onClickBackView(int position);
+    void onClickBackView(View view, int position);
 
     /**
      * Called when user dismisses items
