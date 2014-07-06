@@ -983,7 +983,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
             }
 
             case MotionEvent.ACTION_MOVE: {
-                if (paused || downPosition == ListView.INVALID_POSITION) {
+                if (paused || downPosition == ListView.INVALID_POSITION || areViewsNull()) {
                     break;
                 }
 
@@ -1322,6 +1322,14 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         int px = Math.round(dpi * metrics.density);
         return px;
+    }
+
+    private boolean areViewsNull() {
+        boolean areNull = false;
+        if (backIconLeft == null || backIconRight == null) {
+            areNull = true;
+        }
+        return areNull;
     }
 
 }
