@@ -35,6 +35,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
@@ -59,6 +60,8 @@ import java.util.List;
  * listview also scrolls on its own so as to reveal additional content.
  */
 public class DynamicListView extends SwipeListView {
+
+    private WeakReference<Context> mContext;
 
     private final int SMOOTH_SCROLL_AMOUNT_AT_EDGE = 15;
     private final int MOVE_DURATION = 150;
@@ -94,6 +97,10 @@ public class DynamicListView extends SwipeListView {
     private boolean mIsWaitingForScrollFinish = false;
     private int mScrollState = OnScrollListener.SCROLL_STATE_IDLE;
 
+    private boolean mDragAndDropEnabled = false;
+
+    private ListOrderListener mListOrderListener;
+
     public DynamicListView(Context context, int swipeBackView, int swipeFrontView, int swipeBackIconLeft, int swipeBackIconRight) {
         super(context, swipeBackView, swipeFrontView, swipeBackIconLeft, swipeBackIconRight);
         init(context);
@@ -114,6 +121,7 @@ public class DynamicListView extends SwipeListView {
         setOnScrollListener(mScrollListener);
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         mSmoothScrollAmountAtEdge = (int) (SMOOTH_SCROLL_AMOUNT_AT_EDGE / metrics.density);
+        mContext = new WeakReference<Context>(context);
     }
 
     /**
@@ -201,6 +209,24 @@ public class DynamicListView extends SwipeListView {
      */
     public void setLongSwipeEnabled(boolean enabled) {
         getTouchListener().setLongSwipeEnabled(enabled);
+    }
+
+    /**
+     * Enables or disables drag and drop in the list.
+     *
+     * @param enabled True to enable, false otherwise.
+     */
+    public void setDragAndDropEnabled(boolean enabled) {
+        mDragAndDropEnabled = enabled;
+    }
+
+    /**
+     * Sets the listener for list reordering.
+     *
+     * @param listener Listener to set.
+     */
+    public void setListOrderListener(ListOrderListener listener) {
+        mListOrderListener = listener;
     }
 
     /**
@@ -325,56 +351,59 @@ public class DynamicListView extends SwipeListView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        switch (event.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN:
-                mDownX = (int) event.getX();
-                mDownY = (int) event.getY();
-                mActivePointerId = event.getPointerId(0);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                if (mActivePointerId == INVALID_POINTER_ID) {
+        if (mDragAndDropEnabled) {
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN:
+                    mDownX = (int) event.getX();
+                    mDownY = (int) event.getY();
+                    mActivePointerId = event.getPointerId(0);
                     break;
-                }
+                case MotionEvent.ACTION_MOVE:
+                    if (mActivePointerId == INVALID_POINTER_ID) {
+                        break;
+                    }
 
-                int pointerIndex = event.findPointerIndex(mActivePointerId);
+                    int pointerIndex = event.findPointerIndex(mActivePointerId);
 
-                mLastEventY = (int) event.getY(pointerIndex);
-                int deltaY = mLastEventY - mDownY;
+                    mLastEventY = (int) event.getY(pointerIndex);
+                    int deltaY = mLastEventY - mDownY;
 
-                if (mCellIsMobile) {
-                    mHoverCellCurrentBounds.offsetTo(mHoverCellOriginalBounds.left,
-                            mHoverCellOriginalBounds.top + deltaY + mTotalOffset);
-                    mHoverCell.setBounds(mHoverCellCurrentBounds);
-                    invalidate();
+                    if (mCellIsMobile) {
+                        mHoverCellCurrentBounds.offsetTo(mHoverCellOriginalBounds.left,
+                                mHoverCellOriginalBounds.top + deltaY + mTotalOffset);
+                        mHoverCell.setBounds(mHoverCellCurrentBounds);
+                        invalidate();
 
-                    handleCellSwitch();
+                        handleCellSwitch();
 
-                    mIsMobileScrolling = false;
-                    handleMobileCellScroll();
+                        mIsMobileScrolling = false;
+                        handleMobileCellScroll();
 
-                    return false;
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-                touchEventsEnded();
-                break;
-            case MotionEvent.ACTION_CANCEL:
-                touchEventsCancelled();
-                break;
-            case MotionEvent.ACTION_POINTER_UP:
+                        return false;
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                    touchEventsEnded();
+                    mListOrderListener.listReordered(mContentList);
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                    touchEventsCancelled();
+                    break;
+                case MotionEvent.ACTION_POINTER_UP:
                 /* If a multitouch event took place and the original touch dictating
                  * the movement of the hover cell has ended, then the dragging event
                  * ends and the hover cell is animated to its corresponding position
                  * in the listview. */
-                pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >>
-                        MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-                final int pointerId = event.getPointerId(pointerIndex);
-                if (pointerId == mActivePointerId) {
-                    touchEventsEnded();
-                }
-                break;
-            default:
-                break;
+                    pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >>
+                            MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+                    final int pointerId = event.getPointerId(pointerIndex);
+                    if (pointerId == mActivePointerId) {
+                        touchEventsEnded();
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
         return super.onTouchEvent(event);
@@ -666,4 +695,17 @@ public class DynamicListView extends SwipeListView {
             }
         }
     };
+
+    /**
+     * Interface for list reordering events.
+     */
+    public interface ListOrderListener {
+        /**
+         * List has been reordered.
+         *
+         * @param list Reordered list.
+         */
+        public void listReordered(List list);
+    }
+
 }
