@@ -98,6 +98,7 @@ public class DynamicListView extends SwipeListView {
     private int mScrollState = OnScrollListener.SCROLL_STATE_IDLE;
 
     private boolean mDragAndDropEnabled = false;
+    private boolean mIsDragAndDropping = false;
 
     private ListOrderListener mListOrderListener;
 
@@ -237,6 +238,8 @@ public class DynamicListView extends SwipeListView {
             new AdapterView.OnItemLongClickListener() {
                 public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
                     if (mDragAndDropEnabled) {
+                        mIsDragAndDropping = true;
+
                         mTotalOffset = 0;
 
                         int position = pointToPosition(mDownX, mDownY);
@@ -352,6 +355,7 @@ public class DynamicListView extends SwipeListView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
+        // Ignore touch events when drag and drop is disabled.
         if (mDragAndDropEnabled) {
             switch (event.getAction() & MotionEvent.ACTION_MASK) {
                 case MotionEvent.ACTION_DOWN:
@@ -385,10 +389,14 @@ public class DynamicListView extends SwipeListView {
                     break;
                 case MotionEvent.ACTION_UP:
                     touchEventsEnded();
-                    mListOrderListener.listReordered(mContentList);
+                    if (mIsDragAndDropping) {
+                        mListOrderListener.listReordered(mContentList);
+                    }
+                    mIsDragAndDropping = false;
                     break;
                 case MotionEvent.ACTION_CANCEL:
                     touchEventsCancelled();
+                    mIsDragAndDropping = false;
                     break;
                 case MotionEvent.ACTION_POINTER_UP:
                 /* If a multitouch event took place and the original touch dictating
@@ -401,13 +409,15 @@ public class DynamicListView extends SwipeListView {
                     if (pointerId == mActivePointerId) {
                         touchEventsEnded();
                     }
+                    mIsDragAndDropping = false;
                     break;
                 default:
                     break;
             }
-        }
 
-        return super.onTouchEvent(event);
+            return super.onTouchEvent(event);
+        }
+        return false;
     }
 
     /**
