@@ -711,8 +711,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             closeOpenedItems();
                             performDismiss(parentView, position, true);
                         }
-                        triggerAction();
-                        resetCell();
                     }
                 });
 
@@ -779,7 +777,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
     private void resetCell() {
         if (downPosition != ListView.INVALID_POSITION) {
-            frontView.setClickable(opened.get(downPosition));
             frontView = null;
             backView = null;
             backView = null;
@@ -917,8 +914,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
                         downX = motionEvent.getRawX();
                         downPosition = childPosition;
-
-                        frontView.setClickable(!opened.get(downPosition));
 
                         if (swipeBackView > 0) {
                             setBackView(child.findViewById(swipeBackView));
@@ -1203,6 +1198,9 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     if (dismissAnimationRefCount == 0) {
                         removePendingDismisses(originalHeight);
                     }
+                    dismissView.setVisibility(View.GONE);
+                    triggerAction();
+                    resetCell();
                 }
             });
         }
@@ -1244,7 +1242,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         }
         swipeListView.onDismiss(dismissPositions);
 
-        // TODO: Find out why a thin line of the dismissed view stays on screen.
         ViewGroup.LayoutParams lp;
         for (PendingDismissData pendingDismiss : pendingDismisses) {
             // Reset view presentation
