@@ -30,9 +30,9 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 
 import java.lang.ref.WeakReference;
@@ -102,6 +102,9 @@ public class DynamicListView extends SwipeListView {
 
     private ListOrderListener mListOrderListener;
 
+    private boolean mHasPerformedLongPress;
+    private Runnable mPendingCheckForLongPress;
+
     public DynamicListView(Context context, int swipeBackView, int swipeFrontView, int swipeBackIconLeft, int swipeBackIconRight) {
         super(context, swipeBackView, swipeFrontView, swipeBackIconLeft, swipeBackIconRight);
         init(context);
@@ -118,7 +121,6 @@ public class DynamicListView extends SwipeListView {
     }
 
     public void init(Context context) {
-        setOnItemLongClickListener(mOnItemLongClickListener);
         setOnScrollListener(mScrollListener);
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         mSmoothScrollAmountAtEdge = (int) (SMOOTH_SCROLL_AMOUNT_AT_EDGE / metrics.density);
@@ -231,33 +233,29 @@ public class DynamicListView extends SwipeListView {
     }
 
     /**
-     * Listens for long clicks on any items in the listview. When a cell has
+     * Starts the drag and drop flow. When a cell has
      * been selected, the hover cell is created and set up.
      */
-    private AdapterView.OnItemLongClickListener mOnItemLongClickListener =
-            new AdapterView.OnItemLongClickListener() {
-                public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
-                    if (mDragAndDropEnabled) {
-                        mIsDragAndDropping = true;
+    private void startDragAndDrop() {
+        if (mDragAndDropEnabled) {
+            mIsDragAndDropping = true;
 
-                        mTotalOffset = 0;
+            mTotalOffset = 0;
 
-                        int position = pointToPosition(mDownX, mDownY);
-                        int itemNum = position - getFirstVisiblePosition();
+            int position = pointToPosition(mDownX, mDownY);
+            int itemNum = position - getFirstVisiblePosition();
 
-                        View selectedView = getChildAt(itemNum);
-                        mMobileItemId = getAdapter().getItemId(position);
-                        mMobileView = getViewForID(mMobileItemId);
-                        mHoverCell = getAndAddScaledHoverView(selectedView);
-                        selectedView.setVisibility(INVISIBLE);
+            View selectedView = getChildAt(itemNum);
+            mMobileItemId = getAdapter().getItemId(position);
+            mMobileView = getViewForID(mMobileItemId);
+            mHoverCell = getAndAddScaledHoverView(selectedView);
+            selectedView.setVisibility(INVISIBLE);
 
-                        mCellIsMobile = true;
+            mCellIsMobile = true;
 
-                        updateNeighborViewsForID(mMobileItemId);
-                    }
-                    return mDragAndDropEnabled;
-                }
-            };
+            updateNeighborViewsForID(mMobileItemId);
+        }
+    }
 
     /**
      * Creates the scaled hover cell with the appropriate bitmap and of appropriate
@@ -362,8 +360,31 @@ public class DynamicListView extends SwipeListView {
                     mDownX = (int) event.getX();
                     mDownY = (int) event.getY();
                     mActivePointerId = event.getPointerId(0);
+
+                    if (mPendingCheckForLongPress == null) {
+                        mPendingCheckForLongPress = new Runnable() {
+                            public void run() {
+                                mHasPerformedLongPress = true;
+                                startDragAndDrop();
+                            }
+                        };
+                    }
+
+                    mHasPerformedLongPress = false;
+                    postDelayed(mPendingCheckForLongPress, ViewConfiguration.getLongPressTimeout());
                     break;
                 case MotionEvent.ACTION_MOVE:
+                    final int x = (int) event.getX();
+                    final int y = (int) event.getY();
+
+                    // Be lenient about moving finger.
+                    int slop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
+                    if (x < 0 - slop || y < 0 - slop) {
+                        if (mPendingCheckForLongPress != null) {
+                            removeCallbacks(mPendingCheckForLongPress);
+                        }
+                    }
+
                     if (mActivePointerId == INVALID_POINTER_ID) {
                         break;
                     }
@@ -393,6 +414,13 @@ public class DynamicListView extends SwipeListView {
                         mListOrderListener.listReordered(mContentList);
                     }
                     mIsDragAndDropping = false;
+
+                    if (!mHasPerformedLongPress) {
+                        // This is a tap, so remove the long press check.
+                        if (mPendingCheckForLongPress != null) {
+                            removeCallbacks(mPendingCheckForLongPress);
+                        }
+                    }
                     break;
                 case MotionEvent.ACTION_CANCEL:
                     touchEventsCancelled();
