@@ -373,8 +373,8 @@ public class DynamicListView extends SwipeListView {
                     if (mPendingCheckForLongPress == null) {
                         mPendingCheckForLongPress = new Runnable() {
                             public void run() {
-                                mHasPerformedLongPress = true;
                                 if (!getTouchListener().isSwiping()) {
+                                    mHasPerformedLongPress = true;
                                     startDragAndDrop();
                                 }
                             }
