@@ -233,6 +233,15 @@ public class DynamicListView extends SwipeListView {
     }
 
     /**
+     * Determines if a long press has been performed.
+     *
+     * @return True if it has been.
+     */
+    public boolean hasPerformedLongPress() {
+        return mHasPerformedLongPress;
+    }
+
+    /**
      * Starts the drag and drop flow. When a cell has
      * been selected, the hover cell is created and set up.
      */
@@ -365,7 +374,9 @@ public class DynamicListView extends SwipeListView {
                         mPendingCheckForLongPress = new Runnable() {
                             public void run() {
                                 mHasPerformedLongPress = true;
-                                startDragAndDrop();
+                                if (!getTouchListener().isSwiping()) {
+                                    startDragAndDrop();
+                                }
                             }
                         };
                     }

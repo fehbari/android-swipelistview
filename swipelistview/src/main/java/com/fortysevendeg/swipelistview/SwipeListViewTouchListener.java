@@ -509,6 +509,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     }
 
     /**
+     * Determines if cell is being swiped.
+     *
+     * @return True if it's swiping.
+     */
+    public boolean isSwiping() {
+        return swiping;
+    }
+
+    /**
      * Adds new items when adapter is modified
      */
     public void resetItems() {
@@ -980,7 +989,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
             }
 
             case MotionEvent.ACTION_MOVE: {
-                if (paused || downPosition == ListView.INVALID_POSITION || areViewsNull()) {
+                if (paused || downPosition == ListView.INVALID_POSITION || areViewsNull() || ((DynamicListView) view).hasPerformedLongPress()) {
                     break;
                 }
 
