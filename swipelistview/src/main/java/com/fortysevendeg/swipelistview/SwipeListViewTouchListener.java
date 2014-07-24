@@ -51,6 +51,8 @@ import static com.nineoldandroids.view.ViewPropertyAnimator.animate;
  */
 public class SwipeListViewTouchListener implements View.OnTouchListener {
 
+    private static String LOG_TAG = SwipeListViewTouchListener.class.getCanonicalName();
+
     private Context context;
 
     private static final int DISPLACE_CHOICE = 80;
@@ -890,6 +892,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
             return false;
         }
 
+        if (!(view instanceof DynamicListView)) {
+            Log.e(LOG_TAG, "Invalid list type. Please use DynamicListView instead.");
+            return false;
+        }
+
         if (viewWidth < 2) {
             viewWidth = swipeListView.getWidth();
         }
@@ -989,7 +996,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
             }
 
             case MotionEvent.ACTION_MOVE: {
-                if (paused || downPosition == ListView.INVALID_POSITION || areViewsNull() || ((DynamicListView) view).hasPerformedLongPress()) {
+                if (paused || downPosition == ListView.INVALID_POSITION || areViewsNull() ||
+                        ((DynamicListView) view).hasPerformedLongPress() || ((DynamicListView) view).isScrolling()) {
                     break;
                 }
 

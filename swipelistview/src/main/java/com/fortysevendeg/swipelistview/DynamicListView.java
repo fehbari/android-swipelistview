@@ -107,6 +107,8 @@ public class DynamicListView extends SwipeListView {
     private boolean mHasPerformedLongPress;
     private Runnable mPendingCheckForLongPress;
 
+    private boolean mIsScrolling;
+
     public DynamicListView(Context context, int swipeBackView, int swipeFrontView, int swipeBackIconLeft, int swipeBackIconRight) {
         super(context, swipeBackView, swipeFrontView, swipeBackIconLeft, swipeBackIconRight);
         init(context);
@@ -241,6 +243,15 @@ public class DynamicListView extends SwipeListView {
      */
     public boolean hasPerformedLongPress() {
         return mHasPerformedLongPress;
+    }
+
+    /**
+     * Determines if the list is scrolling vertically.
+     *
+     * @return True when it's scrolling.
+     */
+    public boolean isScrolling() {
+        return mIsScrolling;
     }
 
     /**
@@ -397,6 +408,10 @@ public class DynamicListView extends SwipeListView {
                     }
                 }
 
+                if (deltaModeY > slop) {
+                    mIsScrolling = true;
+                }
+
                 if (mActivePointerId == INVALID_POINTER_ID) {
                     break;
                 }
@@ -428,6 +443,7 @@ public class DynamicListView extends SwipeListView {
                     mListOrderListener.listReordered(mContentList);
                 }
                 mIsDragAndDropping = false;
+                mIsScrolling = false;
 
                 if (!mHasPerformedLongPress) {
                     // This is a tap, so remove the long press check.
@@ -456,6 +472,7 @@ public class DynamicListView extends SwipeListView {
                     touchEventsEnded();
                 }
                 mIsDragAndDropping = false;
+                mIsScrolling = false;
                 break;
             }
         }
