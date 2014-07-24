@@ -75,6 +75,8 @@ public class DynamicListView extends SwipeListView {
     private int mDownY = -1;
     private int mDownX = -1;
 
+    private int mPointerIndex;
+
     private int mTotalOffset = 0;
 
     private boolean mCellIsMobile = false;
@@ -361,102 +363,103 @@ public class DynamicListView extends SwipeListView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN: {
+                mDownX = (int) event.getX();
+                mDownY = (int) event.getY();
+                mActivePointerId = event.getPointerId(0);
 
-        // Ignore touch events when drag and drop is disabled.
-        if (mDragAndDropEnabled) {
-            switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                case MotionEvent.ACTION_DOWN:
-                    mDownX = (int) event.getX();
-                    mDownY = (int) event.getY();
-                    mActivePointerId = event.getPointerId(0);
-
-                    if (mPendingCheckForLongPress == null) {
-                        mPendingCheckForLongPress = new Runnable() {
-                            public void run() {
-                                if (!getTouchListener().isSwiping()) {
-                                    mHasPerformedLongPress = true;
-                                    startDragAndDrop();
-                                }
+                if (mPendingCheckForLongPress == null && mDragAndDropEnabled) {
+                    mPendingCheckForLongPress = new Runnable() {
+                        public void run() {
+                            if (!getTouchListener().isSwiping()) {
+                                mHasPerformedLongPress = true;
+                                startDragAndDrop();
                             }
-                        };
-                    }
-
-                    mHasPerformedLongPress = false;
-                    postDelayed(mPendingCheckForLongPress, ViewConfiguration.getLongPressTimeout());
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    float deltaModeX = Math.abs(event.getX() - mDownX);
-                    float deltaModeY = Math.abs(event.getY() - mDownY);
-
-                    // Be lenient about moving finger.
-                    int slop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-                    if (deltaModeX > slop || deltaModeY > slop) {
-                        if (mPendingCheckForLongPress != null) {
-                            removeCallbacks(mPendingCheckForLongPress);
                         }
+                    };
+                }
+
+                mHasPerformedLongPress = false;
+                postDelayed(mPendingCheckForLongPress, ViewConfiguration.getLongPressTimeout());
+                break;
+            }
+
+            case MotionEvent.ACTION_MOVE: {
+                float deltaModeX = Math.abs(event.getX() - mDownX);
+                float deltaModeY = Math.abs(event.getY() - mDownY);
+
+                // Be lenient about moving finger.
+                int slop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
+                if (deltaModeX > slop || deltaModeY > slop) {
+                    if (mPendingCheckForLongPress != null) {
+                        removeCallbacks(mPendingCheckForLongPress);
                     }
+                }
 
-                    if (mActivePointerId == INVALID_POINTER_ID) {
-                        break;
-                    }
-
-                    int pointerIndex = event.findPointerIndex(mActivePointerId);
-
-                    mLastEventY = (int) event.getY(pointerIndex);
-                    int deltaY = mLastEventY - mDownY;
-
-                    if (mCellIsMobile) {
-                        mHoverCellCurrentBounds.offsetTo(mHoverCellOriginalBounds.left,
-                                mHoverCellOriginalBounds.top + deltaY + mTotalOffset);
-                        mHoverCell.setBounds(mHoverCellCurrentBounds);
-                        invalidate();
-
-                        handleCellSwitch();
-
-                        mIsMobileScrolling = false;
-                        handleMobileCellScroll();
-
-                        return false;
-                    }
+                if (mActivePointerId == INVALID_POINTER_ID) {
                     break;
-                case MotionEvent.ACTION_UP:
-                    touchEventsEnded();
-                    if (mIsDragAndDropping) {
-                        mListOrderListener.listReordered(mContentList);
-                    }
-                    mIsDragAndDropping = false;
+                }
 
-                    if (!mHasPerformedLongPress) {
-                        // This is a tap, so remove the long press check.
-                        if (mPendingCheckForLongPress != null) {
-                            removeCallbacks(mPendingCheckForLongPress);
-                        }
+                mPointerIndex = event.findPointerIndex(mActivePointerId);
+
+                mLastEventY = (int) event.getY(mPointerIndex);
+                int deltaY = mLastEventY - mDownY;
+
+                if (mCellIsMobile) {
+                    mHoverCellCurrentBounds.offsetTo(mHoverCellOriginalBounds.left,
+                            mHoverCellOriginalBounds.top + deltaY + mTotalOffset);
+                    mHoverCell.setBounds(mHoverCellCurrentBounds);
+                    invalidate();
+
+                    handleCellSwitch();
+
+                    mIsMobileScrolling = false;
+                    handleMobileCellScroll();
+
+                    return false;
+                }
+                break;
+            }
+
+            case MotionEvent.ACTION_UP: {
+                touchEventsEnded();
+                if (mIsDragAndDropping) {
+                    mListOrderListener.listReordered(mContentList);
+                }
+                mIsDragAndDropping = false;
+
+                if (!mHasPerformedLongPress) {
+                    // This is a tap, so remove the long press check.
+                    if (mPendingCheckForLongPress != null) {
+                        removeCallbacks(mPendingCheckForLongPress);
                     }
-                    break;
-                case MotionEvent.ACTION_CANCEL:
-                    touchEventsCancelled();
-                    mIsDragAndDropping = false;
-                    break;
-                case MotionEvent.ACTION_POINTER_UP:
+                }
+                break;
+            }
+
+            case MotionEvent.ACTION_CANCEL: {
+                touchEventsCancelled();
+                mIsDragAndDropping = false;
+                break;
+            }
+
+            case MotionEvent.ACTION_POINTER_UP: {
                 /* If a multitouch event took place and the original touch dictating
                  * the movement of the hover cell has ended, then the dragging event
                  * ends and the hover cell is animated to its corresponding position
                  * in the listview. */
-                    pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >>
-                            MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-                    final int pointerId = event.getPointerId(pointerIndex);
-                    if (pointerId == mActivePointerId) {
-                        touchEventsEnded();
-                    }
-                    mIsDragAndDropping = false;
-                    break;
-                default:
-                    break;
+                mPointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >>
+                        MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+                final int pointerId = event.getPointerId(mPointerIndex);
+                if (pointerId == mActivePointerId) {
+                    touchEventsEnded();
+                }
+                mIsDragAndDropping = false;
+                break;
             }
-
-            return super.onTouchEvent(event);
         }
-        return false;
+        return super.onTouchEvent(event);
     }
 
     /**
