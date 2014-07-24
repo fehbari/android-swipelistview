@@ -997,7 +997,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
             case MotionEvent.ACTION_MOVE: {
                 if (paused || downPosition == ListView.INVALID_POSITION || areViewsNull() ||
-                        ((DynamicListView) view).hasPerformedLongPress() || ((DynamicListView) view).isScrolling()) {
+                        ((DynamicListView) view).hasPerformedLongPress() || ((DynamicListView) view).isScrollingY()) {
                     break;
                 }
 

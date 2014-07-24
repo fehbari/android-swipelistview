@@ -734,13 +734,13 @@ public class SwipeListView extends ListView {
         boolean xMoved = xDiff > touchSlop;
         boolean yMoved = yDiff > touchSlop;
 
-        if (xMoved) {
+        if (xMoved && xDiff > yDiff) {
             touchState = TOUCH_STATE_SCROLLING_X;
             lastMotionX = x;
             lastMotionY = y;
         }
 
-        if (yMoved) {
+        if (yMoved && yDiff > xDiff) {
             touchState = TOUCH_STATE_SCROLLING_Y;
             lastMotionX = x;
             lastMotionY = y;
@@ -752,6 +752,10 @@ public class SwipeListView extends ListView {
      */
     public void closeOpenedItems() {
         touchListener.closeOpenedItems();
+    }
+
+    public boolean isScrollingY() {
+        return touchState == TOUCH_STATE_SCROLLING_Y;
     }
 
 }
