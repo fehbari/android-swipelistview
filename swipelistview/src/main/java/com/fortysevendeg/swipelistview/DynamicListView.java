@@ -385,12 +385,12 @@ public class DynamicListView extends SwipeListView {
                     postDelayed(mPendingCheckForLongPress, ViewConfiguration.getLongPressTimeout());
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    final int x = (int) event.getX();
-                    final int y = (int) event.getY();
+                    float deltaModeX = Math.abs(event.getX() - mDownX);
+                    float deltaModeY = Math.abs(event.getY() - mDownY);
 
                     // Be lenient about moving finger.
                     int slop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-                    if (x < 0 - slop || y < 0 - slop) {
+                    if (deltaModeX > slop || deltaModeY > slop) {
                         if (mPendingCheckForLongPress != null) {
                             removeCallbacks(mPendingCheckForLongPress);
                         }
