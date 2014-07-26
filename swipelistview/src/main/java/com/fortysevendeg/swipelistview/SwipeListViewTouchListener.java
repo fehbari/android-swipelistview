@@ -1051,8 +1051,13 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         swipingLeft = deltaX < -swipeThreshold;
                     }
 
-                    swipingLongRight = deltaX > longSwipeThreshold;
-                    swipingLongLeft = deltaX < -longSwipeThreshold;
+                    if (longSwipeEnabledForDirection(SwipeDirections.RIGHT)) {
+                        swipingLongRight = deltaX > longSwipeThreshold;
+                    }
+
+                    if (longSwipeEnabledForDirection(SwipeDirections.LEFT)) {
+                        swipingLongLeft = deltaX < -longSwipeThreshold;
+                    }
 
                     // Changes colors and actions based on swipe direction and length.
                     if (swipingRight && swipeEnabledForDirection(SwipeDirections.RIGHT)) {
@@ -1314,7 +1319,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private boolean longSwipeEnabledForDirection(SwipeDirections direction) {
         switch (direction) {
             case RIGHT:
-                if (longSwipeMode == SwipeListView.SWIPE_MODE_RIGHT || longSwipeMode == SwipeListView.LONG_SWIPE_MODE_BOTH) {
+                if (longSwipeMode == SwipeListView.LONG_SWIPE_MODE_RIGHT || longSwipeMode == SwipeListView.LONG_SWIPE_MODE_BOTH) {
                     return true;
                 }
                 break;
