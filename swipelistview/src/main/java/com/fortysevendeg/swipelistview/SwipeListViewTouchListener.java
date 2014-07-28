@@ -188,12 +188,9 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     private void setFrontView(View frontView) {
         this.frontView = frontView;
-        frontView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                swipeListView.onClickFrontView(v, downPosition);
-            }
-        });
+        // HACK: Without setting the listener to null here, kinetic scrolling misbehaves and drag
+        // and drop crashes. This needs to be further investigated and improved later.
+        frontView.setOnClickListener(null);
     }
 
     /**
@@ -203,12 +200,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     private void setBackView(View backView) {
         this.backView = backView;
-        backView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                swipeListView.onClickBackView(v, downPosition);
-            }
-        });
     }
 
     /**
@@ -686,7 +677,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        swipeListView.resetScrolling();
                         resetCell();
                     }
                 });
@@ -762,7 +752,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        swipeListView.resetScrolling();
                         if (swap) {
                             boolean aux = !opened.get(position);
                             if (aux) {
@@ -828,7 +817,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 if (scrollState != AbsListView.OnScrollListener.SCROLL_STATE_FLING && scrollState != SCROLL_STATE_TOUCH_SCROLL) {
                     listViewMoving = false;
                     downPosition = ListView.INVALID_POSITION;
-                    swipeListView.resetScrolling();
                     new Handler().postDelayed(new Runnable() {
                         public void run() {
                             setEnabled(true);
@@ -957,6 +945,10 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 if (!swiping) {
                     if (downPosition == ListView.INVALID_POSITION) {
                         break;
+                    }
+                    // Detect single tap.
+                    if (!((DynamicListView) view).isScrollingY()) {
+                        swipeListView.onClickFrontView(frontView, downPosition);
                     }
                     view.onTouchEvent(motionEvent);
                     break;

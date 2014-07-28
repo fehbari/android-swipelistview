@@ -22,7 +22,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.DataSetObserver;
 import android.support.v4.view.MotionEventCompat;
-import android.support.v4.view.ViewConfigurationCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -122,27 +121,6 @@ public class SwipeListView extends ListView {
      */
     public final static String SWIPE_DEFAULT_BACK_VIEW_ICON = "swipelist_backview_icon";
 
-    /**
-     * Indicates no movement
-     */
-    private final static int TOUCH_STATE_REST = 0;
-
-    /**
-     * State scrolling x position
-     */
-    private final static int TOUCH_STATE_SCROLLING_X = 1;
-
-    /**
-     * State scrolling y position
-     */
-    private final static int TOUCH_STATE_SCROLLING_Y = 2;
-
-    private int touchState = TOUCH_STATE_REST;
-
-    private float lastMotionX;
-    private float lastMotionY;
-    private int touchSlop;
-
     int swipeFrontView = 0;
     int swipeBackView = 0;
     int swipeBackIconLeft = 0;
@@ -237,7 +215,6 @@ public class SwipeListView extends ListView {
         }
 
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
-        touchSlop = ViewConfigurationCompat.getScaledPagingTouchSlop(configuration);
         touchListener = new SwipeListViewTouchListener(this, swipeFrontView, swipeBackView, swipeBackIconLeft, swipeBackIconRight);
         if (swipeAnimationTime > 0) {
             touchListener.setAnimationTime(swipeAnimationTime);
@@ -559,13 +536,6 @@ public class SwipeListView extends ListView {
     }
 
     /**
-     * Resets scrolling
-     */
-    public void resetScrolling() {
-        touchState = TOUCH_STATE_REST;
-    }
-
-    /**
      * Set offset on right
      *
      * @param offsetRight Offset
@@ -686,34 +656,18 @@ public class SwipeListView extends ListView {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         int action = MotionEventCompat.getActionMasked(ev);
-        final float x = ev.getX();
-        final float y = ev.getY();
 
         if (isEnabled() && touchListener.isSwipeEnabled()) {
-
-            if (touchState == TOUCH_STATE_SCROLLING_X) {
-                return touchListener.onTouch(this, ev);
-            }
-
             switch (action) {
                 case MotionEvent.ACTION_MOVE:
-                    checkInMoving(x, y);
-                    return touchState == TOUCH_STATE_SCROLLING_Y;
+                    return true;
                 case MotionEvent.ACTION_DOWN:
                     super.onInterceptTouchEvent(ev);
                     touchListener.onTouch(this, ev);
-                    touchState = TOUCH_STATE_REST;
-                    lastMotionX = x;
-                    lastMotionY = y;
                     return false;
-                case MotionEvent.ACTION_CANCEL:
-                    touchState = TOUCH_STATE_REST;
-                    break;
                 case MotionEvent.ACTION_UP:
                     touchListener.onTouch(this, ev);
-                    return touchState == TOUCH_STATE_SCROLLING_Y;
-                default:
-                    break;
+                    return true;
             }
         }
 
@@ -721,41 +675,10 @@ public class SwipeListView extends ListView {
     }
 
     /**
-     * Check if the user is moving the cell
-     *
-     * @param x Position X
-     * @param y Position Y
-     */
-    private void checkInMoving(float x, float y) {
-        final int xDiff = (int) Math.abs(x - lastMotionX);
-        final int yDiff = (int) Math.abs(y - lastMotionY);
-
-        final int touchSlop = this.touchSlop;
-        boolean xMoved = xDiff > touchSlop;
-        boolean yMoved = yDiff > touchSlop;
-
-        if (xMoved && xDiff > yDiff) {
-            touchState = TOUCH_STATE_SCROLLING_X;
-            lastMotionX = x;
-            lastMotionY = y;
-        }
-
-        if (yMoved && yDiff > xDiff) {
-            touchState = TOUCH_STATE_SCROLLING_Y;
-            lastMotionX = x;
-            lastMotionY = y;
-        }
-    }
-
-    /**
      * Close all opened items
      */
     public void closeOpenedItems() {
         touchListener.closeOpenedItems();
-    }
-
-    public boolean isScrollingY() {
-        return touchState == TOUCH_STATE_SCROLLING_Y;
     }
 
 }
