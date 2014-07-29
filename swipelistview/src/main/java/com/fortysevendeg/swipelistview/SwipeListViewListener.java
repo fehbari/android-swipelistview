@@ -80,6 +80,14 @@ public interface SwipeListViewListener {
     void onClickFrontView(View view, int position);
 
     /**
+     * Called when user clicks the checkbox in the front view
+     *
+     * @param view     view clicked
+     * @param position list item
+     */
+    void onClickCheckbox(View view, int position);
+
+    /**
      * Called when user clicks on the back view
      *
      * @param view     view clicked

@@ -103,7 +103,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private View backView;
     private View backIconLeft;
     private View backIconRight;
-    private View frontIcon;
+    private View checkbox;
     private boolean paused;
 
     private int swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
@@ -143,6 +143,9 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
     private SwipeDirections initialSwipeDirection;
     private SwipeDirections currentSwipeDirection;
+
+    private int hitX;
+    private int hitY;
 
     private enum SwipeDirections {
         LEFT,
@@ -230,12 +233,12 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     }
 
     /**
-     * Set the front view icon.
+     * Set the front view checkbox.
      *
-     * @param frontIcon Icon to set.
+     * @param checkbox View to set.
      */
-    public void setFrontIcon(View frontIcon) {
-        this.frontIcon = frontIcon;
+    public void setCheckbox(View checkbox) {
+        this.checkbox = checkbox;
     }
 
     /**
@@ -919,6 +922,9 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         downX = motionEvent.getRawX();
                         downPosition = childPosition;
 
+                        hitX = (int) motionEvent.getRawX();
+                        hitY = (int) motionEvent.getRawY();
+
                         if (swipeBackView > 0) {
                             setBackView(child.findViewById(swipeBackView));
                         }
@@ -932,7 +938,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         }
 
                         if (swipeFrontIcon > 0) {
-                            setFrontIcon(child.findViewById(swipeFrontIcon));
+                            setCheckbox(child.findViewById(swipeFrontIcon));
                         }
                         break;
                     }
@@ -946,10 +952,17 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     if (downPosition == ListView.INVALID_POSITION) {
                         break;
                     }
+
                     // Detect single tap.
                     if (!((DynamicListView) view).isScrollingY()) {
-                        swipeListView.onClickFrontView(frontView, downPosition);
+                        // Detect if touch was on the checkbox.
+                        if (didTouchView((View) checkbox.getParent(), hitX, hitY)) {
+                            swipeListView.onClickCheckbox(checkbox, downPosition);
+                        } else {
+                            swipeListView.onClickFrontView(frontView, downPosition);
+                        }
                     }
+
                     view.onTouchEvent(motionEvent);
                     break;
                 }
@@ -1054,7 +1067,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     // Changes colors and actions based on swipe direction and length.
                     if (swipingRight && swipeEnabledForDirection(SwipeDirections.RIGHT)) {
                         backView.setBackgroundColor(rightBackgroundColor);
-                        frontIcon.setBackgroundResource(frontIconRightBackground);
+                        checkbox.setBackgroundResource(frontIconRightBackground);
                         ((TextView) backIconLeft).setText(context.getString(backIconRightText));
 
                         if (swipeActionRight == SwipeListView.SWIPE_ACTION_DISMISS) {
@@ -1064,7 +1077,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         }
                     } else if (swipingLeft && swipeEnabledForDirection(SwipeDirections.LEFT)) {
                         backView.setBackgroundColor(leftBackgroundColor);
-                        frontIcon.setBackgroundResource(frontIconLeftBackground);
+                        checkbox.setBackgroundResource(frontIconLeftBackground);
                         ((TextView) backIconRight).setText(context.getString(backIconLeftText));
 
                         if (swipeActionLeft == SwipeListView.SWIPE_ACTION_DISMISS) {
@@ -1075,11 +1088,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     } else if (swipingLongRight) {
                         if (longSwipeEnabledForDirection(SwipeDirections.RIGHT)) {
                             backView.setBackgroundColor(longRightBackgroundColor);
-                            frontIcon.setBackgroundResource(frontIconLongRightBackground);
+                            checkbox.setBackgroundResource(frontIconLongRightBackground);
                             ((TextView) backIconLeft).setText(context.getString(backIconLongRightText));
                         } else {
                             backView.setBackgroundColor(rightBackgroundColor);
-                            frontIcon.setBackgroundResource(frontIconRightBackground);
+                            checkbox.setBackgroundResource(frontIconRightBackground);
                             ((TextView) backIconLeft).setText(context.getString(backIconRightText));
                         }
 
@@ -1091,11 +1104,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     } else if (swipingLongLeft) {
                         if (longSwipeEnabledForDirection(SwipeDirections.LEFT)) {
                             backView.setBackgroundColor(longLeftBackgroundColor);
-                            frontIcon.setBackgroundResource(frontIconLongLeftBackground);
+                            checkbox.setBackgroundResource(frontIconLongLeftBackground);
                             ((TextView) backIconRight).setText(context.getString(backIconLongLeftText));
                         } else {
                             backView.setBackgroundColor(leftBackgroundColor);
-                            frontIcon.setBackgroundResource(frontIconLeftBackground);
+                            checkbox.setBackgroundResource(frontIconLeftBackground);
                             ((TextView) backIconRight).setText(context.getString(backIconLeftText));
                         }
 
@@ -1124,7 +1137,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         // Changes back view based on swipe direction change (i.e. "regret").
                         if (didRegretSwipe()) {
                             backView.setBackgroundColor(neutralBackgroundColor);
-                            frontIcon.setBackgroundResource(frontIconBackground);
+                            checkbox.setBackgroundResource(frontIconBackground);
                             backIconLeft.setVisibility(View.GONE);
                             backIconRight.setVisibility(View.GONE);
                             swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
@@ -1343,6 +1356,17 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
             areNull = true;
         }
         return areNull;
+    }
+
+    private boolean didTouchView(View view, int x, int y) {
+        Rect viewRect = new Rect();
+        int[] location = new int[2];
+
+        view.getDrawingRect(viewRect);
+        view.getLocationOnScreen(location);
+        viewRect.offset(location[0], location[1]);
+
+        return viewRect.contains(x, y);
     }
 
 }

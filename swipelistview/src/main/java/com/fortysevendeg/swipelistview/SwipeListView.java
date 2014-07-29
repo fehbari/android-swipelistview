@@ -371,6 +371,18 @@ public class SwipeListView extends ListView {
     }
 
     /**
+     * Notifies onClickCheckbox
+     *
+     * @param view     view clicked
+     * @param position item clicked
+     */
+    protected void onClickCheckbox(View view, int position) {
+        if (swipeListViewListener != null && position != ListView.INVALID_POSITION) {
+            swipeListViewListener.onClickCheckbox(view, position);
+        }
+    }
+
+    /**
      * Notifies onClickBackView
      *
      * @param view     view clicked

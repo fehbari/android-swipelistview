@@ -32,6 +32,10 @@ public class BaseSwipeListViewListener implements SwipeListViewListener {
     }
 
     @Override
+    public void onClickCheckbox(View view, int position) {
+    }
+
+    @Override
     public void onClickBackView(View view, int position) {
     }
 
