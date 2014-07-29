@@ -108,6 +108,7 @@ public class DynamicListView extends SwipeListView {
     private Runnable mPendingCheckForLongPress;
 
     private boolean mIsScrollingY;
+    private boolean mIsKineticScrolling;
 
     public DynamicListView(Context context, int swipeBackView, int swipeFrontView, int swipeBackIconLeft, int swipeBackIconRight) {
         super(context, swipeBackView, swipeFrontView, swipeBackIconLeft, swipeBackIconRight);
@@ -251,7 +252,7 @@ public class DynamicListView extends SwipeListView {
      * @return True if it is.
      */
     public boolean isScrollingY() {
-        return mIsScrollingY;
+        return mIsScrollingY || mIsKineticScrolling;
     }
 
     /**
@@ -716,6 +717,7 @@ public class DynamicListView extends SwipeListView {
         public void onScrollStateChanged(AbsListView view, int scrollState) {
             mCurrentScrollState = scrollState;
             mScrollState = scrollState;
+            mIsKineticScrolling = mScrollState != SCROLL_STATE_IDLE;
             isScrollCompleted();
         }
 
