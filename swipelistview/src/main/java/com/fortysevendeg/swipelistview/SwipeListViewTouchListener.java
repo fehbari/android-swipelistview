@@ -948,11 +948,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
             }
 
             case MotionEvent.ACTION_UP: {
-                if (!swiping) {
-                    if (downPosition == ListView.INVALID_POSITION) {
-                        break;
-                    }
+                if (downPosition == ListView.INVALID_POSITION || frontView == null) {
+                    break;
+                }
 
+                if (!swiping) {
                     // Detect single tap.
                     if (!((DynamicListView) view).isScrollingY()) {
                         // Detect if touch was on the checkbox.
@@ -964,7 +964,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     }
 
                     view.onTouchEvent(motionEvent);
-                    break;
                 }
 
                 float deltaX = previousRawX - downX;
@@ -976,11 +975,9 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 } else if (Math.abs(deltaX) > swipeThreshold) {
                     swap = true;
                     swapRight = deltaX > 0;
-                } else if (swapRight != swipingRight && swipeActionLeft != swipeActionRight) {
+                } else if (swipingRight && swipeActionLeft != swipeActionRight) {
                     swap = false;
-                } else if (opened.get(downPosition) && openedRight.get(downPosition) && swapRight) {
-                    swap = false;
-                } else if (opened.get(downPosition) && !openedRight.get(downPosition) && !swapRight) {
+                } else if (opened.get(downPosition) && !openedRight.get(downPosition)) {
                     swap = false;
                 } else if (swipeMode == SwipeListView.SWIPE_MODE_LEFT && deltaX > swipeThreshold) {
                     swap = false;
