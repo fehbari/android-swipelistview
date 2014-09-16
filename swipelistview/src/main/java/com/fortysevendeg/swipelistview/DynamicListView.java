@@ -440,11 +440,6 @@ public class DynamicListView extends SwipeListView {
 
             case MotionEvent.ACTION_UP: {
                 touchEventsEnded();
-                if (mIsDragAndDropping) {
-                    mListOrderListener.listReordered(mContentList);
-                }
-                mIsDragAndDropping = false;
-                mIsScrollingY = false;
 
                 if (!mHasPerformedLongPress) {
                     // This is a tap, so remove the long press check.
@@ -505,11 +500,6 @@ public class DynamicListView extends SwipeListView {
             final long switchItemID = isBelow ? mBelowItemId : mAboveItemId;
             View switchView = isBelow ? belowView : aboveView;
             final int originalItem = getPositionForView(mMobileView);
-
-            if (switchView == null) {
-                updateNeighborViewsForID(mMobileItemId);
-                return;
-            }
 
             swapElements(mContentList, originalItem, getPositionForView(switchView));
 
@@ -598,8 +588,11 @@ public class DynamicListView extends SwipeListView {
                     mBelowItemId = INVALID_ID;
                     mMobileView.setVisibility(VISIBLE);
                     mHoverCell = null;
+                    mIsDragAndDropping = false;
+                    mIsScrollingY = false;
                     setEnabled(true);
                     invalidate();
+                    mListOrderListener.listReordered(mContentList);
                 }
             });
             hoverViewAnimator.start();
