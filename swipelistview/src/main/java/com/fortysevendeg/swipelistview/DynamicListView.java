@@ -100,7 +100,6 @@ public class DynamicListView extends SwipeListView {
     private int mScrollState = OnScrollListener.SCROLL_STATE_IDLE;
 
     private boolean mDragAndDropEnabled = false;
-    private boolean mIsDragAndDropping = false;
 
     private ListOrderListener mListOrderListener;
 
@@ -261,8 +260,6 @@ public class DynamicListView extends SwipeListView {
      */
     private void startDragAndDrop() {
         if (mDragAndDropEnabled) {
-            mIsDragAndDropping = true;
-
             mTotalOffset = 0;
 
             int position = pointToPosition(mDownX, mDownY);
@@ -447,12 +444,13 @@ public class DynamicListView extends SwipeListView {
                         removeCallbacks(mPendingCheckForLongPress);
                     }
                 }
+
+                mIsScrollingY = false;
                 break;
             }
 
             case MotionEvent.ACTION_CANCEL: {
                 touchEventsCancelled();
-                mIsDragAndDropping = false;
                 break;
             }
 
@@ -467,7 +465,6 @@ public class DynamicListView extends SwipeListView {
                 if (pointerId == mActivePointerId) {
                     touchEventsEnded();
                 }
-                mIsDragAndDropping = false;
                 mIsScrollingY = false;
                 break;
             }
@@ -588,8 +585,7 @@ public class DynamicListView extends SwipeListView {
                     mBelowItemId = INVALID_ID;
                     mMobileView.setVisibility(VISIBLE);
                     mHoverCell = null;
-                    mIsDragAndDropping = false;
-                    mIsScrollingY = false;
+
                     setEnabled(true);
                     invalidate();
                     mListOrderListener.listReordered(mContentList);
