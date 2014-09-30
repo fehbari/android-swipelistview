@@ -97,7 +97,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private boolean swipingLeft;
     private boolean swipingLongLeft;
 
-    private int downPosition;
+    private int downPosition = -1;
     private View parentView;
     private View frontView;
     private View backView;
@@ -505,6 +505,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     }
 
     /**
+     * Gets the position touched on the list.
+     *
+     * @return Position.
+     */
+    public int getDownPosition() {
+        return downPosition;
+    }
+
+    /**
      * Determines if cell is being swiped.
      *
      * @return True if it's swiping.
@@ -897,6 +906,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 if (paused && downPosition != ListView.INVALID_POSITION) {
                     return false;
                 }
+
                 swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
                 longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_NONE;
 

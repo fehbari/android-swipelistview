@@ -679,7 +679,7 @@ public class SwipeListView extends ListView {
                     return false;
                 case MotionEvent.ACTION_UP:
                     touchListener.onTouch(this, ev);
-                    return true;
+                    return false;
             }
         }
 

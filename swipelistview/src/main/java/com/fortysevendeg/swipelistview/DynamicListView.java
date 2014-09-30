@@ -34,6 +34,8 @@ import android.view.ViewConfiguration;
 import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
+import android.widget.HeaderViewListAdapter;
+import android.widget.ListAdapter;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -68,7 +70,8 @@ public class DynamicListView extends SwipeListView {
     private final int LINE_THICKNESS = 15;
     private final float BITMAP_SCALE = 0.9f;
 
-    public List mContentList;
+    private List mContentList;
+    private BaseAdapter mAdapter;
 
     private int mLastEventY = -1;
 
@@ -266,7 +269,7 @@ public class DynamicListView extends SwipeListView {
             int itemNum = position - getFirstVisiblePosition();
 
             View selectedView = getChildAt(itemNum);
-            mMobileItemId = getAdapter().getItemId(position);
+            mMobileItemId = mAdapter.getItemId(position - 1);
             mMobileView = getViewForID(mMobileItemId);
             mHoverCell = getAndAddScaledHoverView(selectedView);
             selectedView.setVisibility(INVISIBLE);
@@ -324,9 +327,9 @@ public class DynamicListView extends SwipeListView {
      * may be invalid.
      */
     private void updateNeighborViewsForID(long itemID) {
-        int position = getPositionForID(itemID);
-        mAboveItemId = getAdapter().getItemId(position - 1);
-        mBelowItemId = getAdapter().getItemId(position + 1);
+        int position = getPositionForID(itemID) - 1;
+        mAboveItemId = mAdapter.getItemId(position - 1);
+        mBelowItemId = mAdapter.getItemId(position + 1);
     }
 
     /**
@@ -337,7 +340,7 @@ public class DynamicListView extends SwipeListView {
         for (int i = 0; i < getChildCount(); i++) {
             View v = getChildAt(i);
             int position = firstVisiblePosition + i;
-            long id = getAdapter().getItemId(position);
+            long id = mAdapter.getItemId(position - 1);
             if (id == itemID) {
                 return v;
             }
@@ -381,7 +384,7 @@ public class DynamicListView extends SwipeListView {
                 if (mPendingCheckForLongPress == null && mDragAndDropEnabled) {
                     mPendingCheckForLongPress = new Runnable() {
                         public void run() {
-                            if (!getTouchListener().isSwiping()) {
+                            if (!getTouchListener().isSwiping() && getTouchListener().getDownPosition() > 0) {
                                 mHasPerformedLongPress = true;
                                 startDragAndDrop();
                             }
@@ -485,9 +488,9 @@ public class DynamicListView extends SwipeListView {
         final int deltaY = mLastEventY - mDownY;
         int deltaYTotal = mHoverCellOriginalBounds.top + mTotalOffset + deltaY;
 
-        View belowView = getViewForID(mBelowItemId);
+        View belowView = mBelowItemId > -1 ? getViewForID(mBelowItemId) : null;
         mMobileView = getViewForID(mMobileItemId);
-        View aboveView = getViewForID(mAboveItemId);
+        View aboveView = mAboveItemId > -1 ? getViewForID(mAboveItemId) : null;
 
         boolean isBelow = (belowView != null) && (deltaYTotal > belowView.getTop());
         boolean isAbove = (aboveView != null) && (deltaYTotal < aboveView.getTop());
@@ -496,11 +499,12 @@ public class DynamicListView extends SwipeListView {
 
             final long switchItemID = isBelow ? mBelowItemId : mAboveItemId;
             View switchView = isBelow ? belowView : aboveView;
-            final int originalItem = getPositionForView(mMobileView);
+            final int originalItem = getPositionForView(mMobileView) - 1;
+            int swapItem = getPositionForView(switchView) - 1;
 
-            swapElements(mContentList, originalItem, getPositionForView(switchView));
+            swapElements(mContentList, originalItem, swapItem);
 
-            ((BaseAdapter) getAdapter()).notifyDataSetChanged();
+            mAdapter.notifyDataSetChanged();
 
             mDownY = mLastEventY;
 
@@ -668,6 +672,11 @@ public class DynamicListView extends SwipeListView {
 
     public void setContentList(List contentList) {
         mContentList = contentList;
+    }
+
+    public void setAdapter(ListAdapter adapter) {
+        super.setAdapter(adapter);
+        mAdapter = (BaseAdapter) ((HeaderViewListAdapter) getAdapter()).getWrappedAdapter();
     }
 
     /**
