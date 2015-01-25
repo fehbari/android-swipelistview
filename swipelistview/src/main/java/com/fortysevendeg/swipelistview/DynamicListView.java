@@ -377,8 +377,8 @@ public class DynamicListView extends SwipeListView {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN: {
-                mDownX = (int) event.getX();
-                mDownY = (int) event.getY();
+                mDownX = (int) event.getRawX();
+                mDownY = (int) event.getRawY();
                 mActivePointerId = event.getPointerId(0);
 
                 if (mPendingCheckForLongPress == null && mDragAndDropEnabled) {
@@ -398,8 +398,8 @@ public class DynamicListView extends SwipeListView {
             }
 
             case MotionEvent.ACTION_MOVE: {
-                float deltaModeX = Math.abs(event.getX() - mDownX);
-                float deltaModeY = Math.abs(event.getY() - mDownY);
+                float deltaModeX = Math.abs(event.getRawX() - mDownX);
+                float deltaModeY = Math.abs(event.getRawY() - mDownY);
 
                 // Be lenient about moving finger.
                 int slop = ViewConfiguration.get(getContext()).getScaledTouchSlop();

@@ -136,6 +136,10 @@ public class SwipeListView extends ListView {
      */
     private SwipeListViewTouchListener touchListener;
 
+    /**
+     * ViewPager reference to handle touch conflicts.
+     */
+    private DynamicViewPager mViewPager;
 
     /**
      * If you create a View programmatically you need send back and front identifier
@@ -691,6 +695,22 @@ public class SwipeListView extends ListView {
      */
     public void closeOpenedItems() {
         touchListener.closeOpenedItems();
+    }
+
+    /**
+     * Sets ViewPager reference to handle touch conflicts.
+     *
+     * @param viewPager ViewPager being used.
+     */
+    public void setViewPager(DynamicViewPager viewPager) {
+        mViewPager = viewPager;
+    }
+
+    /**
+     * @return ViewPager reference to handle touch conflicts.
+     */
+    public DynamicViewPager getViewPager() {
+        return mViewPager;
     }
 
 }

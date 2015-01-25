@@ -171,7 +171,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         animationTime = configShortAnimationTime;
         this.swipeListView = swipeListView;
         swipeThreshold = convertDpiToPixel(60);
-        longSwipeThreshold = convertDpiToPixel(240);
+        longSwipeThreshold = convertDpiToPixel(180);
         minSwipeThreshold = convertDpiToPixel(20);
     }
 
@@ -950,6 +950,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         if (swipeFrontIcon > 0) {
                             setCheckbox(child.findViewById(swipeFrontIcon));
                         }
+
+                        if (swipeListView.getViewPager() != null) {
+                            swipeListView.getViewPager().setSwipeable(false);
+                        }
+
                         break;
                     }
                 }
@@ -996,6 +1001,10 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 }
 
                 generateAnimate(frontView, swap, swapRight, downPosition);
+
+                if (swipeListView.getViewPager() != null) {
+                    swipeListView.getViewPager().setSwipeable(true);
+                }
 
                 // Interaction is done, reset state variables.
                 downX = 0;
