@@ -138,6 +138,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private int backIconLongLeftText;
 
     private boolean longSwipeEnabled;
+    private boolean swipeEnabled = true;
 
     private int animationMoveTo;
 
@@ -312,7 +313,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      * @return
      */
     protected boolean isSwipeEnabled() {
-        return swipeMode != SwipeListView.SWIPE_MODE_NONE;
+        return swipeEnabled && swipeMode != SwipeListView.SWIPE_MODE_NONE;
     }
 
     /**
@@ -502,6 +503,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     public void setLongSwipeEnabled(boolean enabled) {
         longSwipeEnabled = enabled;
+    }
+
+    /**
+     * Enables or disables swiping in the list.
+     *
+     * @param enabled True to enable, false otherwise.
+     */
+    public void setSwipeEnabled(boolean enabled) {
+        swipeEnabled = enabled;
     }
 
     /**

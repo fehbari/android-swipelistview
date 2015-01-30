@@ -213,6 +213,15 @@ public class DynamicListView extends SwipeListView {
     }
 
     /**
+     * Enables or disables swiping in the list.
+     *
+     * @param enabled True to enable, false otherwise.
+     */
+    public void setSwipeEnabled(boolean enabled) {
+        getTouchListener().setSwipeEnabled(enabled);
+    }
+
+    /**
      * Enables or disables long swipes in the list.
      *
      * @param enabled True to enable, false otherwise.
@@ -375,6 +384,10 @@ public class DynamicListView extends SwipeListView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (!getTouchListener().isSwipeEnabled()) {
+            return false;
+        }
+
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN: {
                 mDownX = (int) event.getX();
