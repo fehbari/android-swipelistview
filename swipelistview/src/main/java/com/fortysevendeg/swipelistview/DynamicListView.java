@@ -397,8 +397,9 @@ public class DynamicListView extends SwipeListView {
                 if (mPendingCheckForLongPress == null && mDragAndDropEnabled) {
                     mPendingCheckForLongPress = new Runnable() {
                         public void run() {
-                            if (!getTouchListener().isSwiping() && getTouchListener().getDownPosition() > 0) {
+                            if (!isSwiping && getTouchListener().getDownPosition() > 0) {
                                 mHasPerformedLongPress = true;
+                                onMove(getTouchListener().getDownPosition());
                                 startDragAndDrop();
                             }
                         }
@@ -605,6 +606,7 @@ public class DynamicListView extends SwipeListView {
 
                     setEnabled(true);
                     invalidate();
+                    onMoveEnded(getTouchListener().getDownPosition());
                     mListOrderListener.listReordered(mContentList);
                 }
             });

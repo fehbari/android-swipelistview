@@ -50,9 +50,15 @@ public interface SwipeListViewListener {
      * Called when user is moving an item
      *
      * @param position list item
-     * @param x        Current position X
      */
-    void onMove(int position, float x);
+    void onMove(int position);
+
+    /**
+     * Called when user is done moving an item
+     *
+     * @param position list item
+     */
+    void onMoveEnded(int position);
 
     /**
      * Start open item

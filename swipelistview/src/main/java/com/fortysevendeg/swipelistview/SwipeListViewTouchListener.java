@@ -91,7 +91,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private float downX;
     private float previousRawX;
 
-    private boolean swiping;
     private boolean swipingRight;
     private boolean swipingLongRight;
     private boolean swipingLeft;
@@ -524,15 +523,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     }
 
     /**
-     * Determines if cell is being swiped.
-     *
-     * @return True if it's swiping.
-     */
-    public boolean isSwiping() {
-        return swiping;
-    }
-
-    /**
      * Adds new items when adapter is modified
      */
     public void resetItems() {
@@ -684,6 +674,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         } else {
             generateNoActionAnimate(view, position);
         }
+
+        swipeListView.onMoveEnded(position);
     }
 
     /**
@@ -977,7 +969,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     break;
                 }
 
-                if (!swiping) {
+                if (!swipeListView.isSwiping()) {
                     // Detect single tap.
                     if (!((DynamicListView) view).isScrollingY()) {
                         // Detect if touch was on the checkbox.
@@ -1019,7 +1011,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 // Interaction is done, reset state variables.
                 downX = 0;
                 previousRawX = 0;
-                swiping = false;
                 currentSwipeDirection = null;
                 initialSwipeDirection = null;
 
@@ -1172,7 +1163,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     }
 
                     if (deltaMode > slop) {
-                        swiping = true;
                         Log.d("SwipeListView", "deltaX: " + deltaX + " - swipingRight: " + swipingRight);
 
                         if (opened.get(downPosition)) {
@@ -1190,7 +1180,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     previousRawX = motionEvent.getRawX();
                 }
 
-                if (swiping && downPosition != ListView.INVALID_POSITION) {
+                if (swipeListView.isSwiping() && downPosition != ListView.INVALID_POSITION) {
                     if (opened.get(downPosition)) {
                         deltaX += openedRight.get(downPosition) ? viewWidth - rightOffset : -viewWidth + leftOffset;
                     }
@@ -1209,7 +1199,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      * @param deltaX delta
      */
     public void move(float deltaX) {
-        swipeListView.onMove(downPosition, deltaX);
+        swipeListView.onMove(downPosition);
         backView.setVisibility(View.VISIBLE);
         setTranslationX(frontView, deltaX);
         setTranslationX(backIconLeft, deltaX);

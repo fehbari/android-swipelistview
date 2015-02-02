@@ -16,7 +16,11 @@ public class BaseSwipeListViewListener implements SwipeListViewListener {
     }
 
     @Override
-    public void onMove(int position, float x) {
+    public void onMove(int position) {
+    }
+
+    @Override
+    public void onMoveEnded(int position) {
     }
 
     @Override

@@ -142,6 +142,11 @@ public class SwipeListView extends ListView {
     private DynamicViewPager mViewPager;
 
     /**
+     * Controls swiping state.
+     */
+    protected boolean isSwiping;
+
+    /**
      * If you create a View programmatically you need send back and front identifier
      *
      * @param context        Context
@@ -483,11 +488,23 @@ public class SwipeListView extends ListView {
      * Notifies onMove
      *
      * @param position Item moving
-     * @param x        Current position
      */
-    protected void onMove(int position, float x) {
+    protected void onMove(int position) {
         if (swipeListViewListener != null && position != ListView.INVALID_POSITION) {
-            swipeListViewListener.onMove(position, x);
+            swipeListViewListener.onMove(position);
+            isSwiping = true;
+        }
+    }
+
+    /**
+     * Notifies onMoveEnded
+     *
+     * @param position Item moving
+     */
+    protected void onMoveEnded(int position) {
+        if (swipeListViewListener != null && position != ListView.INVALID_POSITION) {
+            swipeListViewListener.onMoveEnded(position);
+            isSwiping = false;
         }
     }
 
@@ -657,6 +674,15 @@ public class SwipeListView extends ListView {
      */
     public void setAnimationTime(long animationTime) {
         touchListener.setAnimationTime(animationTime);
+    }
+
+    /**
+     * Determines the swiping state.
+     *
+     * @return True if the list is swiping.
+     */
+    public boolean isSwiping() {
+        return isSwiping;
     }
 
     /**
