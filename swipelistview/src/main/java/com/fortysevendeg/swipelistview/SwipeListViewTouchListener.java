@@ -1163,6 +1163,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     }
 
                     if (deltaMode > slop) {
+                        swipeListView.onMove(downPosition);
                         Log.d("SwipeListView", "deltaX: " + deltaX + " - swipingRight: " + swipingRight);
 
                         if (opened.get(downPosition)) {
@@ -1199,7 +1200,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      * @param deltaX delta
      */
     public void move(float deltaX) {
-        swipeListView.onMove(downPosition);
         backView.setVisibility(View.VISIBLE);
         setTranslationX(frontView, deltaX);
         setTranslationX(backIconLeft, deltaX);
