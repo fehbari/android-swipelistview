@@ -905,7 +905,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
         switch (MotionEventCompat.getActionMasked(motionEvent)) {
             case MotionEvent.ACTION_DOWN: {
-                if (paused && downPosition != ListView.INVALID_POSITION) {
+                if (paused || downPosition != ListView.INVALID_POSITION) {
                     return false;
                 }
 

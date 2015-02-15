@@ -34,6 +34,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ListAdapter;
 
 import java.lang.ref.WeakReference;
@@ -383,7 +384,7 @@ public class DynamicListView extends SwipeListView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (!getTouchListener().isSwipeEnabled()) {
+        if (!getTouchListener().isSwipeEnabled() || getTouchListener().getDownPosition() == -1) {
             return false;
         }
 
@@ -690,7 +691,10 @@ public class DynamicListView extends SwipeListView {
 
     public void setAdapter(ListAdapter adapter) {
         super.setAdapter(adapter);
-        mAdapter = (BaseAdapter) getAdapter();
+        if (adapter instanceof HeaderViewListAdapter) {
+            adapter = ((HeaderViewListAdapter) adapter).getWrappedAdapter();
+        }
+        mAdapter = (BaseAdapter) adapter;
     }
 
     /**

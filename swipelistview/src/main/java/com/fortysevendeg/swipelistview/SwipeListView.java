@@ -702,7 +702,7 @@ public class SwipeListView extends ListView {
         if (isEnabled() && touchListener.isSwipeEnabled()) {
             switch (action) {
                 case MotionEvent.ACTION_MOVE:
-                    return true;
+                    return getTouchListener().getDownPosition() != -1;
                 case MotionEvent.ACTION_DOWN:
                     super.onInterceptTouchEvent(ev);
                     touchListener.onTouch(this, ev);
