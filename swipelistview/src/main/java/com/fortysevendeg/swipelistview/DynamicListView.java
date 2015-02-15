@@ -34,7 +34,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
-import android.widget.HeaderViewListAdapter;
 import android.widget.ListAdapter;
 
 import java.lang.ref.WeakReference;
@@ -278,7 +277,7 @@ public class DynamicListView extends SwipeListView {
             int itemNum = position - getFirstVisiblePosition();
 
             View selectedView = getChildAt(itemNum);
-            mMobileItemId = mAdapter.getItemId(position - 1);
+            mMobileItemId = mAdapter.getItemId(position);
             mMobileView = getViewForID(mMobileItemId);
             mHoverCell = getAndAddScaledHoverView(selectedView);
             selectedView.setVisibility(INVISIBLE);
@@ -336,7 +335,7 @@ public class DynamicListView extends SwipeListView {
      * may be invalid.
      */
     private void updateNeighborViewsForID(long itemID) {
-        int position = getPositionForID(itemID) - 1;
+        int position = getPositionForID(itemID);
         mAboveItemId = mAdapter.getItemId(position - 1);
         mBelowItemId = mAdapter.getItemId(position + 1);
     }
@@ -349,7 +348,7 @@ public class DynamicListView extends SwipeListView {
         for (int i = 0; i < getChildCount(); i++) {
             View v = getChildAt(i);
             int position = firstVisiblePosition + i;
-            long id = mAdapter.getItemId(position - 1);
+            long id = mAdapter.getItemId(position);
             if (id == itemID) {
                 return v;
             }
@@ -397,7 +396,7 @@ public class DynamicListView extends SwipeListView {
                 if (mPendingCheckForLongPress == null && mDragAndDropEnabled) {
                     mPendingCheckForLongPress = new Runnable() {
                         public void run() {
-                            if (!isSwiping && getTouchListener().getDownPosition() > 0) {
+                            if (!isSwiping && getTouchListener().getDownPosition() > -1) {
                                 mHasPerformedLongPress = true;
                                 onMove(getTouchListener().getDownPosition());
                                 startDragAndDrop();
@@ -513,8 +512,8 @@ public class DynamicListView extends SwipeListView {
 
             final long switchItemID = isBelow ? mBelowItemId : mAboveItemId;
             View switchView = isBelow ? belowView : aboveView;
-            final int originalItem = getPositionForView(mMobileView) - 1;
-            int swapItem = getPositionForView(switchView) - 1;
+            final int originalItem = getPositionForView(mMobileView);
+            int swapItem = getPositionForView(switchView);
 
             swapElements(mContentList, originalItem, swapItem);
 
@@ -691,14 +690,14 @@ public class DynamicListView extends SwipeListView {
 
     public void setAdapter(ListAdapter adapter) {
         super.setAdapter(adapter);
-        mAdapter = (BaseAdapter) ((HeaderViewListAdapter) getAdapter()).getWrappedAdapter();
+        mAdapter = (BaseAdapter) getAdapter();
     }
 
     /**
      * This scroll listener is added to the listview in order to handle cell swapping
      * when the cell is either at the top or bottom edge of the listview. If the hover
      * cell is at either edge of the listview, the listview will begin scrolling. As
-     * scrolling takes place, the listview continuously checks if new cells became visible
+     * scrolling takes place, he listview continuously checks if new cells became visible
      * and determines whether they are potential candidates for a cell swap.
      */
     private AbsListView.OnScrollListener mScrollListener = new AbsListView.OnScrollListener() {
