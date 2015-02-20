@@ -21,6 +21,7 @@
 package com.fortysevendeg.swipelistview;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.support.v4.view.MotionEventCompat;
@@ -98,6 +99,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
     private int downPosition = -1;
     private View parentView;
+    private View containerView;
     private View frontView;
     private View backView;
     private View backIconLeft;
@@ -119,6 +121,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private boolean listViewMoving;
     private List<Boolean> checked = new ArrayList<Boolean>();
 
+    private int containerBackgroundColor;
     private int rightBackgroundColor;
     private int longRightBackgroundColor;
     private int leftBackgroundColor;
@@ -182,6 +185,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     private void setParentView(View parentView) {
         this.parentView = parentView;
+    }
+
+    /**
+     * Sets current item's container view
+     *
+     * @param containerView Container view
+     */
+    private void setContainerView(View containerView) {
+        this.containerView = containerView;
     }
 
     /**
@@ -367,6 +379,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     public void setLongSwipeActionRight(int longSwipeActionRight) {
         this.longSwipeActionRight = longSwipeActionRight;
+    }
+
+    /**
+     * Set container background color.
+     *
+     * @param backgroundColor Background color.
+     */
+    public void setContainerBackgroundColor(int backgroundColor) {
+        this.containerBackgroundColor = backgroundColor;
     }
 
     /**
@@ -791,6 +812,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
     private void resetCell() {
         if (downPosition != ListView.INVALID_POSITION) {
+            containerView = null;
             frontView = null;
             backView = null;
             backView = null;
@@ -935,6 +957,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     if (allowSwipe && rect.contains(x, y)) {
                         setParentView(child);
                         setFrontView(child.findViewById(swipeFrontView));
+                        setContainerView((View) frontView.getParent());
 
                         downX = motionEvent.getRawX();
                         downPosition = childPosition;
@@ -1086,6 +1109,13 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         swipingLongLeft = deltaX < -longSwipeThreshold;
                     }
 
+                    // Optimize overdraw by painting only one view.
+                    if (swipingRight || swipingLeft) {
+                        frontView.setBackgroundColor(containerBackgroundColor);
+                        containerView.setBackgroundColor(Color.TRANSPARENT);
+                        backView.setVisibility(View.VISIBLE);
+                    }
+
                     // Changes colors and actions based on swipe direction and length.
                     if (swipingRight && swipeEnabledForDirection(SwipeDirections.RIGHT)) {
                         backView.setBackgroundColor(rightBackgroundColor);
@@ -1139,8 +1169,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         } else if (longSwipeActionLeft == SwipeListView.LONG_SWIPE_ACTION_REVEAL) {
                             longSwipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
                         }
-                    } else {
-                        backView.setBackgroundColor(neutralBackgroundColor);
                     }
 
                     swipeListView.onStartOpen(downPosition, swipeCurrentAction, swipingRight);
@@ -1158,6 +1186,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
                         // Changes back view based on swipe direction change (i.e. "regret").
                         if (didRegretSwipe()) {
+                            containerView.setBackgroundColor(containerBackgroundColor);
+                            frontView.setBackgroundColor(Color.TRANSPARENT);
                             backView.setBackgroundColor(neutralBackgroundColor);
                             checkbox.setBackgroundResource(frontIconBackground);
                             backIconLeft.setVisibility(View.GONE);
@@ -1205,7 +1235,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      * @param deltaX delta
      */
     public void move(float deltaX) {
-        backView.setVisibility(View.VISIBLE);
         setTranslationX(frontView, deltaX);
         setTranslationX(backIconLeft, deltaX);
         setTranslationX(backIconRight, deltaX);

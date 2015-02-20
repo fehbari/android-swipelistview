@@ -68,7 +68,7 @@ public class DynamicListView extends SwipeListView {
     private final int SMOOTH_SCROLL_AMOUNT_AT_EDGE = 15;
     private final int MOVE_DURATION = 150;
     private final int LINE_THICKNESS = 15;
-    private final float BITMAP_SCALE = 0.9f;
+    private final float BITMAP_SCALE = 1f;
 
     private List mContentList;
     private BaseAdapter mAdapter;
@@ -132,6 +132,15 @@ public class DynamicListView extends SwipeListView {
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         mSmoothScrollAmountAtEdge = (int) (SMOOTH_SCROLL_AMOUNT_AT_EDGE / metrics.density);
         mContext = new WeakReference<Context>(context);
+    }
+
+    /**
+     * Set container background color.
+     *
+     * @param backgroundColor Background color.
+     */
+    public void setContainerBackgroundColor(int backgroundColor) {
+        getTouchListener().setContainerBackgroundColor(backgroundColor);
     }
 
     /**
