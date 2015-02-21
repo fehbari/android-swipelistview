@@ -1094,11 +1094,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     ((TextView) backIconRight).setText(null);
 
                     if (longSwipeEnabled) {
-                        swipingRight = deltaX > swipeThreshold && deltaX < longSwipeThreshold;
-                        swipingLeft = deltaX < -swipeThreshold && deltaX > -longSwipeThreshold;
+                        swipingRight = deltaX > 0 && deltaX < longSwipeThreshold;
+                        swipingLeft = deltaX < 0 && deltaX > -longSwipeThreshold;
                     } else {
-                        swipingRight = deltaX > swipeThreshold;
-                        swipingLeft = deltaX < -swipeThreshold;
+                        swipingRight = deltaX > 0;
+                        swipingLeft = deltaX < 0;
                     }
 
                     if (longSwipeEnabledForDirection(SwipeDirections.RIGHT)) {
@@ -1109,65 +1109,93 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         swipingLongLeft = deltaX < -longSwipeThreshold;
                     }
 
-                    // Optimize overdraw by painting only one view.
-                    if (swipingRight || swipingLeft) {
+                    boolean validSwipe = deltaX > swipeThreshold || deltaX < -swipeThreshold;
+
+                    if (validSwipe) {
+                        // Animate alpha of back view.
+                        backView.animate().alpha(1f).setDuration(200);
+                    } else {
+                        // Optimize overdraw by painting only one view.
                         frontView.setBackgroundColor(containerBackgroundColor);
                         containerView.setBackgroundColor(Color.TRANSPARENT);
+                        backView.setAlpha(0.2f);
                         backView.setVisibility(View.VISIBLE);
                     }
 
                     // Changes colors and actions based on swipe direction and length.
                     if (swipingRight && swipeEnabledForDirection(SwipeDirections.RIGHT)) {
                         backView.setBackgroundColor(rightBackgroundColor);
-                        checkbox.setBackgroundResource(frontIconRightBackground);
-                        ((TextView) backIconLeft).setText(context.getString(backIconRightText));
 
-                        if (swipeActionRight == SwipeListView.SWIPE_ACTION_DISMISS) {
-                            swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
-                        } else if (swipeActionRight == SwipeListView.SWIPE_ACTION_REVEAL) {
-                            swipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                        if (validSwipe) {
+                            checkbox.setBackgroundResource(frontIconRightBackground);
+                            ((TextView) backIconLeft).setText(context.getString(backIconRightText));
+
+                            if (swipeActionRight == SwipeListView.SWIPE_ACTION_DISMISS) {
+                                swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
+                            } else if (swipeActionRight == SwipeListView.SWIPE_ACTION_REVEAL) {
+                                swipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                            }
                         }
                     } else if (swipingLeft && swipeEnabledForDirection(SwipeDirections.LEFT)) {
                         backView.setBackgroundColor(leftBackgroundColor);
-                        checkbox.setBackgroundResource(frontIconLeftBackground);
-                        ((TextView) backIconRight).setText(context.getString(backIconLeftText));
 
-                        if (swipeActionLeft == SwipeListView.SWIPE_ACTION_DISMISS) {
-                            swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
-                        } else if (swipeActionLeft == SwipeListView.SWIPE_ACTION_REVEAL) {
-                            swipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                        if (validSwipe) {
+                            checkbox.setBackgroundResource(frontIconLeftBackground);
+                            ((TextView) backIconRight).setText(context.getString(backIconLeftText));
+
+                            if (swipeActionLeft == SwipeListView.SWIPE_ACTION_DISMISS) {
+                                swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
+                            } else if (swipeActionLeft == SwipeListView.SWIPE_ACTION_REVEAL) {
+                                swipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                            }
                         }
                     } else if (swipingLongRight) {
                         if (longSwipeEnabledForDirection(SwipeDirections.RIGHT)) {
                             backView.setBackgroundColor(longRightBackgroundColor);
-                            checkbox.setBackgroundResource(frontIconLongRightBackground);
-                            ((TextView) backIconLeft).setText(context.getString(backIconLongRightText));
+
+                            if (validSwipe) {
+                                checkbox.setBackgroundResource(frontIconLongRightBackground);
+                                ((TextView) backIconLeft).setText(context.getString(backIconLongRightText));
+                            }
                         } else {
                             backView.setBackgroundColor(rightBackgroundColor);
-                            checkbox.setBackgroundResource(frontIconRightBackground);
-                            ((TextView) backIconLeft).setText(context.getString(backIconRightText));
+
+                            if (validSwipe) {
+                                checkbox.setBackgroundResource(frontIconRightBackground);
+                                ((TextView) backIconLeft).setText(context.getString(backIconRightText));
+                            }
                         }
 
-                        if (longSwipeActionRight == SwipeListView.LONG_SWIPE_ACTION_DISMISS) {
-                            longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_DISMISS;
-                        } else if (longSwipeActionRight == SwipeListView.LONG_SWIPE_ACTION_REVEAL) {
-                            longSwipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                        if (validSwipe) {
+                            if (longSwipeActionRight == SwipeListView.LONG_SWIPE_ACTION_DISMISS) {
+                                longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_DISMISS;
+                            } else if (longSwipeActionRight == SwipeListView.LONG_SWIPE_ACTION_REVEAL) {
+                                longSwipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                            }
                         }
                     } else if (swipingLongLeft) {
                         if (longSwipeEnabledForDirection(SwipeDirections.LEFT)) {
                             backView.setBackgroundColor(longLeftBackgroundColor);
-                            checkbox.setBackgroundResource(frontIconLongLeftBackground);
-                            ((TextView) backIconRight).setText(context.getString(backIconLongLeftText));
+
+                            if (validSwipe) {
+                                checkbox.setBackgroundResource(frontIconLongLeftBackground);
+                                ((TextView) backIconRight).setText(context.getString(backIconLongLeftText));
+                            }
                         } else {
                             backView.setBackgroundColor(leftBackgroundColor);
-                            checkbox.setBackgroundResource(frontIconLeftBackground);
-                            ((TextView) backIconRight).setText(context.getString(backIconLeftText));
+
+                            if (validSwipe) {
+                                checkbox.setBackgroundResource(frontIconLeftBackground);
+                                ((TextView) backIconRight).setText(context.getString(backIconLeftText));
+                            }
                         }
 
-                        if (longSwipeActionLeft == SwipeListView.LONG_SWIPE_ACTION_DISMISS) {
-                            longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_DISMISS;
-                        } else if (longSwipeActionLeft == SwipeListView.LONG_SWIPE_ACTION_REVEAL) {
-                            longSwipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                        if (validSwipe) {
+                            if (longSwipeActionLeft == SwipeListView.LONG_SWIPE_ACTION_DISMISS) {
+                                longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_DISMISS;
+                            } else if (longSwipeActionLeft == SwipeListView.LONG_SWIPE_ACTION_REVEAL) {
+                                longSwipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
+                            }
                         }
                     }
 
@@ -1186,12 +1214,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
                         // Changes back view based on swipe direction change (i.e. "regret").
                         if (didRegretSwipe()) {
-                            containerView.setBackgroundColor(containerBackgroundColor);
-                            frontView.setBackgroundColor(Color.TRANSPARENT);
-                            backView.setBackgroundColor(neutralBackgroundColor);
+                            backView.animate().alpha(0.2f).setDuration(200);
                             checkbox.setBackgroundResource(frontIconBackground);
-                            backIconLeft.setVisibility(View.GONE);
-                            backIconRight.setVisibility(View.GONE);
                             swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
                             longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_NONE;
                         }
