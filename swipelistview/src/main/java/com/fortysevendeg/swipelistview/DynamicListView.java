@@ -144,6 +144,15 @@ public class DynamicListView extends SwipeListView {
     }
 
     /**
+     * Set accent color.
+     *
+     * @param accentColor Accent color.
+     */
+    public void setAccentColor(int accentColor) {
+        getTouchListener().setAccentColor(accentColor);
+    }
+
+    /**
      * Sets background colors for swipe gestures.
      *
      * @param rightColor Right swipe gesture color.
@@ -195,6 +204,15 @@ public class DynamicListView extends SwipeListView {
      */
     public void setFrontIcon(int frontIcon) {
         getTouchListener().setSwipeFrontIcon(frontIcon);
+    }
+
+    /**
+     * Set the front view detail text.
+     *
+     * @param detailText ID of the view to set.
+     */
+    public void setFrontDetailText(int detailText) {
+        getTouchListener().setSwipeFrontDetailText(detailText);
     }
 
     /**

@@ -67,6 +67,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private int swipeBackIconLeft = 0;
     private int swipeBackIconRight = 0;
     private int swipeFrontIcon = 0;
+    private int swipeFrontDetailText = 0;
 
     private Rect rect = new Rect();
 
@@ -105,6 +106,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private View backIconLeft;
     private View backIconRight;
     private View checkbox;
+    private View detailText;
     private boolean paused;
 
     private int swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
@@ -122,6 +124,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private List<Boolean> checked = new ArrayList<Boolean>();
 
     private int containerBackgroundColor;
+    private int accentColor;
     private int rightBackgroundColor;
     private int longRightBackgroundColor;
     private int leftBackgroundColor;
@@ -245,12 +248,30 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     }
 
     /**
+     * Set the front detail text resource.
+     *
+     * @param frontDetailText Resource to set.
+     */
+    public void setSwipeFrontDetailText(int frontDetailText) {
+        this.swipeFrontDetailText = frontDetailText;
+    }
+
+    /**
      * Set the front view checkbox.
      *
      * @param checkbox View to set.
      */
     public void setCheckbox(View checkbox) {
         this.checkbox = checkbox;
+    }
+
+    /**
+     * Set the front view detail text.
+     *
+     * @param detailText View to set.
+     */
+    public void setDetailText(View detailText) {
+        this.detailText = detailText;
     }
 
     /**
@@ -388,6 +409,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     public void setContainerBackgroundColor(int backgroundColor) {
         this.containerBackgroundColor = backgroundColor;
+    }
+
+    /**
+     * Set accent color.
+     *
+     * @param accentColor Accent color.
+     */
+    public void setAccentColor(int accentColor) {
+        this.accentColor = accentColor;
     }
 
     /**
@@ -982,6 +1012,10 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             setCheckbox(child.findViewById(swipeFrontIcon));
                         }
 
+                        if (swipeFrontDetailText > 0) {
+                            setDetailText(child.findViewById(swipeFrontDetailText));
+                        }
+
                         if (swipeListView.getViewPager() != null) {
                             swipeListView.getViewPager().setSwipeable(false);
                         }
@@ -1088,12 +1122,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
                     longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_NONE;
 
-                    // Reset back icons.
-                    backIconLeft.setVisibility(View.VISIBLE);
-                    backIconRight.setVisibility(View.VISIBLE);
-                    ((TextView) backIconLeft).setText(null);
-                    ((TextView) backIconRight).setText(null);
-
                     if (longSwipeEnabled) {
                         swipingRight = deltaX > 0 && deltaX < longSwipeThreshold;
                         swipingLeft = deltaX < 0 && deltaX > -longSwipeThreshold;
@@ -1115,6 +1143,10 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     if (validSwipe) {
                         // Animate alpha of back view.
                         backView.animate().alpha(1f).setDuration(200);
+
+                        // Fade in back icons.
+                        backIconLeft.animate().alpha(1f).setDuration(200);
+                        backIconRight.animate().alpha(1f).setDuration(200);
                     } else {
                         // Optimize overdraw by painting only one view.
                         frontView.setBackgroundColor(containerBackgroundColor);
@@ -1123,6 +1155,10 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         // Set back view initial alpha.
                         backView.setAlpha(0.2f);
                         backView.setVisibility(View.VISIBLE);
+
+                        // Fade out back icons.
+                        backIconLeft.animate().alpha(0f).setDuration(200);
+                        backIconRight.animate().alpha(0f).setDuration(200);
                     }
 
                     // Changes colors and actions based on swipe direction and length.
@@ -1132,6 +1168,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         if (validSwipe) {
                             checkbox.setBackgroundResource(frontIconRightBackground);
                             ((TextView) backIconLeft).setText(context.getString(backIconRightText));
+                            ((TextView) detailText).setTextColor(rightBackgroundColor);
 
                             if (swipeActionRight == SwipeListView.SWIPE_ACTION_DISMISS) {
                                 swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
@@ -1145,6 +1182,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         if (validSwipe) {
                             checkbox.setBackgroundResource(frontIconLeftBackground);
                             ((TextView) backIconRight).setText(context.getString(backIconLeftText));
+                            ((TextView) detailText).setTextColor(leftBackgroundColor);
 
                             if (swipeActionLeft == SwipeListView.SWIPE_ACTION_DISMISS) {
                                 swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
@@ -1159,6 +1197,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             if (validSwipe) {
                                 checkbox.setBackgroundResource(frontIconLongRightBackground);
                                 ((TextView) backIconLeft).setText(context.getString(backIconLongRightText));
+                                ((TextView) detailText).setTextColor(longRightBackgroundColor);
                             }
                         } else {
                             backView.setBackgroundColor(rightBackgroundColor);
@@ -1166,6 +1205,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             if (validSwipe) {
                                 checkbox.setBackgroundResource(frontIconRightBackground);
                                 ((TextView) backIconLeft).setText(context.getString(backIconRightText));
+                                ((TextView) detailText).setTextColor(rightBackgroundColor);
                             }
                         }
 
@@ -1183,6 +1223,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             if (validSwipe) {
                                 checkbox.setBackgroundResource(frontIconLongLeftBackground);
                                 ((TextView) backIconRight).setText(context.getString(backIconLongLeftText));
+                                ((TextView) detailText).setTextColor(longLeftBackgroundColor);
                             }
                         } else {
                             backView.setBackgroundColor(leftBackgroundColor);
@@ -1190,6 +1231,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             if (validSwipe) {
                                 checkbox.setBackgroundResource(frontIconLeftBackground);
                                 ((TextView) backIconRight).setText(context.getString(backIconLeftText));
+                                ((TextView) detailText).setTextColor(leftBackgroundColor);
                             }
                         }
 
@@ -1224,6 +1266,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         if (didRegretSwipe()) {
                             backView.animate().alpha(0.2f).setDuration(200);
                             checkbox.setBackgroundResource(frontIconBackground);
+                            ((TextView) detailText).setTextColor(accentColor);
                             swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
                             longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_NONE;
                         }
