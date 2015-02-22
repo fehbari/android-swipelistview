@@ -1119,6 +1119,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         // Optimize overdraw by painting only one view.
                         frontView.setBackgroundColor(containerBackgroundColor);
                         containerView.setBackgroundColor(Color.TRANSPARENT);
+
+                        // Set back view initial alpha.
                         backView.setAlpha(0.2f);
                         backView.setVisibility(View.VISIBLE);
                     }
@@ -1198,6 +1200,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                                 longSwipeCurrentAction = SwipeListView.SWIPE_ACTION_REVEAL;
                             }
                         }
+                    } else {
+                        // Nothing happened. Reset views.
+                        backView.setVisibility(View.GONE);
+                        frontView.setBackgroundColor(Color.TRANSPARENT);
+                        containerView.setBackgroundColor(containerBackgroundColor);
                     }
 
                     swipeListView.onStartOpen(downPosition, swipeCurrentAction, swipingRight);
