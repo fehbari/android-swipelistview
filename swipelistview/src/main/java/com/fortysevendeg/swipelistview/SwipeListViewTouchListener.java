@@ -68,6 +68,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private int swipeBackIconRight = 0;
     private int swipeFrontIcon = 0;
     private int swipeFrontDetailText = 0;
+    private int swipeFrontLabel = 0;
 
     private Rect rect = new Rect();
 
@@ -107,6 +108,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private View backIconRight;
     private View checkbox;
     private View detailText;
+    private View label;
     private boolean paused;
 
     private int swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
@@ -136,6 +138,12 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private int frontIconLongRightBackground;
     private int frontIconLeftBackground;
     private int frontIconLongLeftBackground;
+
+    private int frontLabelBackground;
+    private int frontLabelRightBackground;
+    private int frontLabelLongRightBackground;
+    private int frontLabelLeftBackground;
+    private int frontLabelLongLeftBackground;
 
     private int backIconRightText;
     private int backIconLongRightText;
@@ -275,10 +283,73 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     }
 
     /**
+     * Set the front view label.
+     *
+     * @param label View to set.
+     */
+    public void setLabel(View label) {
+        this.label = label;
+    }
+
+    /**
      * @return true if the list is in motion
      */
     public boolean isListViewMoving() {
         return listViewMoving;
+    }
+
+    /**
+     * Set the front view label resource.
+     *
+     * @param swipeFrontLabel Label resource to set.
+     */
+    public void setSwipeFrontLabel(int swipeFrontLabel) {
+        this.swipeFrontLabel = swipeFrontLabel;
+    }
+
+    /**
+     * Set the resource for the front view label background.
+     *
+     * @param frontLabelBackground Resource to set.
+     */
+    public void setFrontLabelBackground(int frontLabelBackground) {
+        this.frontLabelBackground = frontLabelBackground;
+    }
+
+    /**
+     * Set the resource for the front view label background when swiping right.
+     *
+     * @param frontLabelRightBackground Resource to set.
+     */
+    public void setFrontLabelRightBackground(int frontLabelRightBackground) {
+        this.frontLabelRightBackground = frontLabelRightBackground;
+    }
+
+    /**
+     * Set the resource for the front view label background when long swiping right.
+     *
+     * @param frontLabelLongRightBackground Resource to set.
+     */
+    public void setFrontLabelLongRightBackground(int frontLabelLongRightBackground) {
+        this.frontLabelLongRightBackground = frontLabelLongRightBackground;
+    }
+
+    /**
+     * Set the resource for the front view label background when swiping left.
+     *
+     * @param frontLabelLeftBackground Resource to set.
+     */
+    public void setFrontLabelLeftBackground(int frontLabelLeftBackground) {
+        this.frontLabelLeftBackground = frontLabelLeftBackground;
+    }
+
+    /**
+     * Set the resource for the front view label background when long swiping left.
+     *
+     * @param frontLabelLongLeftBackground Resource to set.
+     */
+    public void setFrontLabelLongLeftBackground(int frontLabelLongLeftBackground) {
+        this.frontLabelLongLeftBackground = frontLabelLongLeftBackground;
     }
 
     /**
@@ -1016,6 +1087,10 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             setDetailText(child.findViewById(swipeFrontDetailText));
                         }
 
+                        if (swipeFrontLabel > 0) {
+                            setLabel(child.findViewById(swipeFrontLabel));
+                        }
+
                         if (swipeListView.getViewPager() != null) {
                             swipeListView.getViewPager().setSwipeable(false);
                         }
@@ -1169,6 +1244,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             checkbox.setBackgroundResource(frontIconRightBackground);
                             ((TextView) backIconLeft).setText(context.getString(backIconRightText));
                             ((TextView) detailText).setTextColor(rightBackgroundColor);
+                            label.setBackgroundResource(frontLabelRightBackground);
 
                             if (swipeActionRight == SwipeListView.SWIPE_ACTION_DISMISS) {
                                 swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
@@ -1183,6 +1259,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             checkbox.setBackgroundResource(frontIconLeftBackground);
                             ((TextView) backIconRight).setText(context.getString(backIconLeftText));
                             ((TextView) detailText).setTextColor(leftBackgroundColor);
+                            label.setBackgroundResource(frontLabelLeftBackground);
 
                             if (swipeActionLeft == SwipeListView.SWIPE_ACTION_DISMISS) {
                                 swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
@@ -1198,6 +1275,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                                 checkbox.setBackgroundResource(frontIconLongRightBackground);
                                 ((TextView) backIconLeft).setText(context.getString(backIconLongRightText));
                                 ((TextView) detailText).setTextColor(longRightBackgroundColor);
+                                label.setBackgroundResource(frontLabelLongRightBackground);
                             }
                         } else {
                             backView.setBackgroundColor(rightBackgroundColor);
@@ -1206,6 +1284,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                                 checkbox.setBackgroundResource(frontIconRightBackground);
                                 ((TextView) backIconLeft).setText(context.getString(backIconRightText));
                                 ((TextView) detailText).setTextColor(rightBackgroundColor);
+                                label.setBackgroundResource(frontLabelRightBackground);
                             }
                         }
 
@@ -1224,6 +1303,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                                 checkbox.setBackgroundResource(frontIconLongLeftBackground);
                                 ((TextView) backIconRight).setText(context.getString(backIconLongLeftText));
                                 ((TextView) detailText).setTextColor(longLeftBackgroundColor);
+                                label.setBackgroundResource(frontLabelLongLeftBackground);
                             }
                         } else {
                             backView.setBackgroundColor(leftBackgroundColor);
@@ -1232,6 +1312,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                                 checkbox.setBackgroundResource(frontIconLeftBackground);
                                 ((TextView) backIconRight).setText(context.getString(backIconLeftText));
                                 ((TextView) detailText).setTextColor(leftBackgroundColor);
+                                label.setBackgroundResource(frontLabelLeftBackground);
                             }
                         }
 
@@ -1267,6 +1348,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             backView.animate().alpha(0.2f).setDuration(200);
                             checkbox.setBackgroundResource(frontIconBackground);
                             ((TextView) detailText).setTextColor(accentColor);
+                            label.setBackgroundResource(frontLabelBackground);
                             swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
                             longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_NONE;
                         }
