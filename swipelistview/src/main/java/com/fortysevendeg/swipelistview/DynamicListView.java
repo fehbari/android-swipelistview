@@ -28,6 +28,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -428,6 +429,9 @@ public class DynamicListView extends SwipeListView {
                                 mHasPerformedLongPress = true;
                                 onMove(getTouchListener().getDownPosition());
                                 startDragAndDrop();
+
+                                // Vibrate to indicate drag and drop has started.
+                                performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
                             }
                         }
                     };
