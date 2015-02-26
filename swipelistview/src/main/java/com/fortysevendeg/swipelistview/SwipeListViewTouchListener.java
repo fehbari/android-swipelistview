@@ -308,6 +308,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     }
 
     /**
+     * Get the front view label resource.
+     *
+     * @return Label resource ID.
+     */
+    public int getSwipeFrontLabel() {
+        return this.swipeFrontLabel;
+    }
+
+    /**
      * Set the resource for the front view label background.
      *
      * @param frontLabelBackground Resource to set.
@@ -656,6 +665,24 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 checked.add(false);
             }
         }
+    }
+
+    /**
+     * Gets the resource ID of the front view.
+     *
+     * @return Front view resource ID.
+     */
+    public int getSwipeFrontView() {
+        return swipeFrontView;
+    }
+
+    /**
+     * Gets the resource ID of the back view.
+     *
+     * @return Back view resource ID.
+     */
+    public int getSwipeBackView() {
+        return swipeBackView;
     }
 
     /**

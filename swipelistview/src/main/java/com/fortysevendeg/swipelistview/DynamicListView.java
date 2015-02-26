@@ -38,7 +38,6 @@ import android.widget.BaseAdapter;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListAdapter;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
@@ -64,12 +63,9 @@ import java.util.List;
  */
 public class DynamicListView extends SwipeListView {
 
-    private WeakReference<Context> mContext;
-
-    private final int SMOOTH_SCROLL_AMOUNT_AT_EDGE = 15;
-    private final int MOVE_DURATION = 150;
-    private final int LINE_THICKNESS = 15;
-    private final float BITMAP_SCALE = 1f;
+    private static final int SMOOTH_SCROLL_AMOUNT_AT_EDGE = 15;
+    private static final int MOVE_DURATION = 200;
+    private static final float BITMAP_SCALE = 0.9f;
 
     private List mContentList;
     private BaseAdapter mAdapter;
@@ -78,8 +74,6 @@ public class DynamicListView extends SwipeListView {
 
     private int mDownY = -1;
     private int mDownX = -1;
-
-    private int mPointerIndex;
 
     private int mTotalOffset = 0;
 
@@ -113,6 +107,10 @@ public class DynamicListView extends SwipeListView {
     private boolean mIsScrollingY;
     private boolean mIsKineticScrolling;
 
+    private int mBackgroundColor;
+
+    private int mFrontCounterRes;
+
     public DynamicListView(Context context, int swipeBackView, int swipeFrontView, int swipeBackIconLeft, int swipeBackIconRight) {
         super(context, swipeBackView, swipeFrontView, swipeBackIconLeft, swipeBackIconRight);
         init(context);
@@ -132,7 +130,6 @@ public class DynamicListView extends SwipeListView {
         setOnScrollListener(mScrollListener);
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         mSmoothScrollAmountAtEdge = (int) (SMOOTH_SCROLL_AMOUNT_AT_EDGE / metrics.density);
-        mContext = new WeakReference<Context>(context);
     }
 
     /**
@@ -142,6 +139,7 @@ public class DynamicListView extends SwipeListView {
      */
     public void setContainerBackgroundColor(int backgroundColor) {
         getTouchListener().setContainerBackgroundColor(backgroundColor);
+        mBackgroundColor = backgroundColor;
     }
 
     /**
@@ -328,6 +326,15 @@ public class DynamicListView extends SwipeListView {
     }
 
     /**
+     * Sets the front counter view resource identifier.
+     *
+     * @param frontCounter Front counter resource ID.
+     */
+    public void setFrontCounter(int frontCounter) {
+        mFrontCounterRes = frontCounter;
+    }
+
+    /**
      * Starts the drag and drop flow. When a cell has
      * been selected, the hover cell is created and set up.
      */
@@ -339,10 +346,21 @@ public class DynamicListView extends SwipeListView {
             int itemNum = position - getFirstVisiblePosition();
 
             View selectedView = getChildAt(itemNum);
+            View frontView = selectedView.findViewById(getTouchListener().getSwipeFrontView());
+            View backView = selectedView.findViewById(getTouchListener().getSwipeBackView());
+            View labelView = selectedView.findViewById(getTouchListener().getSwipeFrontLabel());
+            View frontCounter = selectedView.findViewById(mFrontCounterRes);
+
+            frontView.setBackgroundColor(mBackgroundColor);
+            labelView.setVisibility(GONE);
+            frontCounter.setVisibility(GONE);
+
             mMobileItemId = mAdapter.getItemId(position);
             mMobileView = getViewForID(mMobileItemId);
-            mHoverCell = getAndAddScaledHoverView(selectedView);
-            selectedView.setVisibility(INVISIBLE);
+            mHoverCell = getAndAddScaledHoverView(selectedView, frontView, position);
+
+            frontView.setVisibility(GONE);
+            backView.setVisibility(GONE);
 
             mCellIsMobile = true;
 
@@ -355,16 +373,15 @@ public class DynamicListView extends SwipeListView {
      * size. The hover cell's BitmapDrawable is drawn on top of the scaled bitmap every
      * single time an invalidate call is made.
      */
-    private BitmapDrawable getAndAddScaledHoverView(View v) {
+    private BitmapDrawable getAndAddScaledHoverView(View v, View frontView, int position) {
+        int w = frontView.getWidth();
+        int h = frontView.getHeight();
+        int deltaX = v.getWidth() - w;
+        int deltaY = v.getHeight() - h;
+        int top = position > 0 ? v.getTop() : v.getTop() + deltaY;
+        int left = v.getLeft() + deltaX / 2;
 
-        int w = v.getWidth();
-        int h = v.getHeight();
-        int top = v.getTop();
-        int left = v.getLeft();
-
-        // TODO: Figure out why we need an arbitrary value of 0.9f (could be a miscalculation of bounds. The original code was never prepared for scaled bitmaps).
-        Bitmap b = getScaledBitmapFromView(v, BITMAP_SCALE);
-
+        Bitmap b = getScaledBitmapFromView(frontView, BITMAP_SCALE);
         BitmapDrawable drawable = new BitmapDrawable(getResources(), b);
 
         mHoverCellOriginalBounds = new Rect(left, top, left + w, top + h);
@@ -382,12 +399,12 @@ public class DynamicListView extends SwipeListView {
         int width = Math.round(v.getWidth() * scale);
         int height = Math.round(v.getHeight() * scale);
 
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Bitmap scaledBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
-        Canvas canvas = new Canvas(bitmap);
+        Canvas canvas = new Canvas(scaledBitmap);
         v.draw(canvas);
 
-        return bitmap;
+        return scaledBitmap;
     }
 
     /**
@@ -495,9 +512,9 @@ public class DynamicListView extends SwipeListView {
                     break;
                 }
 
-                mPointerIndex = event.findPointerIndex(mActivePointerId);
+                int pointerIndex = event.findPointerIndex(mActivePointerId);
 
-                mLastEventY = (int) event.getY(mPointerIndex);
+                mLastEventY = (int) event.getY(pointerIndex);
                 int deltaY = mLastEventY - mDownY;
 
                 if (mCellIsMobile) {
@@ -540,9 +557,9 @@ public class DynamicListView extends SwipeListView {
                  * the movement of the hover cell has ended, then the dragging event
                  * ends and the hover cell is animated to its corresponding position
                  * in the listview. */
-                mPointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >>
+                int pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >>
                         MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-                final int pointerId = event.getPointerId(mPointerIndex);
+                final int pointerId = event.getPointerId(pointerIndex);
                 if (pointerId == mActivePointerId) {
                     touchEventsEnded();
                 }
@@ -577,6 +594,7 @@ public class DynamicListView extends SwipeListView {
 
             final long switchItemID = isBelow ? mBelowItemId : mAboveItemId;
             View switchView = isBelow ? belowView : aboveView;
+            View switchFrontView = switchView.findViewById(getTouchListener().getSwipeFrontView());
             final int originalItem = getPositionForView(mMobileView);
             int swapItem = getPositionForView(switchView);
 
@@ -589,7 +607,7 @@ public class DynamicListView extends SwipeListView {
             final int switchViewStartTop = switchView.getTop();
 
             mMobileView.setVisibility(View.VISIBLE);
-            switchView.setVisibility(View.INVISIBLE);
+            switchFrontView.setVisibility(GONE);
 
             updateNeighborViewsForID(mMobileItemId);
 
@@ -599,15 +617,17 @@ public class DynamicListView extends SwipeListView {
                     observer.removeOnPreDrawListener(this);
 
                     View switchView = getViewForID(switchItemID);
+                    View switchFrontView = switchView.findViewById(getTouchListener().getSwipeFrontView());
+                    switchFrontView.setVisibility(VISIBLE);
 
                     mTotalOffset += deltaY;
 
                     int switchViewNewTop = switchView.getTop();
                     int delta = switchViewStartTop - switchViewNewTop;
 
-                    switchView.setTranslationY(delta);
+                    switchFrontView.setTranslationY(delta);
 
-                    ObjectAnimator animator = ObjectAnimator.ofFloat(switchView,
+                    ObjectAnimator animator = ObjectAnimator.ofFloat(switchFrontView,
                             View.TRANSLATION_Y, 0);
                     animator.setDuration(MOVE_DURATION);
                     animator.start();
