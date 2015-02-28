@@ -346,25 +346,29 @@ public class DynamicListView extends SwipeListView {
             int itemNum = position - getFirstVisiblePosition();
 
             View selectedView = getChildAt(itemNum);
-            View frontView = selectedView.findViewById(getTouchListener().getSwipeFrontView());
-            View backView = selectedView.findViewById(getTouchListener().getSwipeBackView());
-            View labelView = selectedView.findViewById(getTouchListener().getSwipeFrontLabel());
-            View frontCounter = selectedView.findViewById(mFrontCounterRes);
-
-            frontView.setBackgroundColor(mBackgroundColor);
-            labelView.setVisibility(GONE);
-            frontCounter.setVisibility(GONE);
 
             mMobileItemId = mAdapter.getItemId(position);
             mMobileView = getViewForID(mMobileItemId);
-            mHoverCell = getAndAddScaledHoverView(selectedView, frontView, position);
 
-            frontView.setVisibility(GONE);
-            backView.setVisibility(GONE);
+            if (selectedView != null && mMobileView != null) {
+                View frontView = selectedView.findViewById(getTouchListener().getSwipeFrontView());
+                View backView = selectedView.findViewById(getTouchListener().getSwipeBackView());
+                View labelView = selectedView.findViewById(getTouchListener().getSwipeFrontLabel());
+                View frontCounter = selectedView.findViewById(mFrontCounterRes);
 
-            mCellIsMobile = true;
+                frontView.setBackgroundColor(mBackgroundColor);
+                labelView.setVisibility(GONE);
+                frontCounter.setVisibility(GONE);
 
-            updateNeighborViewsForID(mMobileItemId);
+                mHoverCell = getAndAddScaledHoverView(selectedView, frontView, position);
+
+                frontView.setVisibility(GONE);
+                backView.setVisibility(GONE);
+
+                mCellIsMobile = true;
+
+                updateNeighborViewsForID(mMobileItemId);
+            }
         }
     }
 
@@ -517,7 +521,7 @@ public class DynamicListView extends SwipeListView {
                 mLastEventY = (int) event.getY(pointerIndex);
                 int deltaY = mLastEventY - mDownY;
 
-                if (mCellIsMobile) {
+                if (mCellIsMobile && mMobileView != null) {
                     mHoverCellCurrentBounds.offsetTo(mHoverCellOriginalBounds.left,
                             mHoverCellOriginalBounds.top + deltaY + mTotalOffset);
                     mHoverCell.setBounds(mHoverCellCurrentBounds);
@@ -649,12 +653,7 @@ public class DynamicListView extends SwipeListView {
      * the hover cell back to its correct location.
      */
     private void touchEventsEnded() {
-        if (mCellIsMobile || mIsWaitingForScrollFinish) {
-            mCellIsMobile = false;
-            mIsWaitingForScrollFinish = false;
-            mIsMobileScrolling = false;
-            mActivePointerId = INVALID_POINTER_ID;
-
+        if ((mCellIsMobile || mIsWaitingForScrollFinish) && mMobileView != null) {
             // If the autoscroller has not completed scrolling, we need to wait for it to
             // finish in order to determine the final location of where the hover cell
             // should be animated to.
@@ -668,12 +667,14 @@ public class DynamicListView extends SwipeListView {
 
             ObjectAnimator hoverViewAnimator = ObjectAnimator.ofObject(mHoverCell, "bounds",
                     sBoundEvaluator, mHoverCellCurrentBounds);
+
             hoverViewAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator valueAnimator) {
                     invalidate();
                 }
             });
+
             hoverViewAnimator.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationStart(Animator animation) {
@@ -682,21 +683,17 @@ public class DynamicListView extends SwipeListView {
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mAboveItemId = INVALID_ID;
-                    mMobileItemId = INVALID_ID;
-                    mBelowItemId = INVALID_ID;
-                    mMobileView.setVisibility(VISIBLE);
-                    mHoverCell = null;
-
+                    touchEventsCancelled();
                     setEnabled(true);
-                    invalidate();
                     onMoveEnded(getTouchListener().getDownPosition());
                     mListOrderListener.listReordered(mContentList);
                 }
             });
+
             hoverViewAnimator.start();
         } else {
             touchEventsCancelled();
+            setEnabled(true);
         }
     }
 
@@ -714,6 +711,7 @@ public class DynamicListView extends SwipeListView {
         }
         mCellIsMobile = false;
         mIsMobileScrolling = false;
+        mIsWaitingForScrollFinish = false;
         mActivePointerId = INVALID_POINTER_ID;
     }
 
