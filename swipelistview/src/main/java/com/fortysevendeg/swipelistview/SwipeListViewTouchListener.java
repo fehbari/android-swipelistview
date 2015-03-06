@@ -1078,7 +1078,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     // Don't allow swiping if this is on the header or footer or IGNORE_ITEM_VIEW_TYPE
                     // or enabled is false on the adapter.
                     boolean allowSwipe = false;
-                    if (swipeListView.getAdapter().getCount() > 0) {
+                    int count = swipeListView.getAdapter().getCount();
+                    if (count > 0 && childPosition < count) {
                         allowSwipe = swipeListView.getAdapter().isEnabled(childPosition)
                                 && swipeListView.getAdapter().getItemViewType(childPosition) >= 0;
                     }
