@@ -67,6 +67,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private int swipeBackIconLeft = 0;
     private int swipeBackIconRight = 0;
     private int swipeFrontIcon = 0;
+    private int swipeFrontNumber = 0;
     private int swipeFrontDetailText = 0;
     private int swipeFrontLabel = 0;
 
@@ -107,6 +108,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private View backIconLeft;
     private View backIconRight;
     private View checkbox;
+    private View number;
     private View detailText;
     private View label;
     private boolean paused;
@@ -256,6 +258,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     }
 
     /**
+     * Set the front view number resource.
+     *
+     * @param swipeFrontNumber View resource to set.
+     */
+    public void setSwipeFrontNumber(int swipeFrontNumber) {
+        this.swipeFrontNumber = swipeFrontNumber;
+    }
+
+    /**
      * Set the front detail text resource.
      *
      * @param frontDetailText Resource to set.
@@ -271,6 +282,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      */
     public void setCheckbox(View checkbox) {
         this.checkbox = checkbox;
+    }
+
+    /**
+     * Set the front view number.
+     *
+     * @param number View to set.
+     */
+    public void setNumber(View number) {
+        this.number = number;
     }
 
     /**
@@ -1111,6 +1131,10 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             setCheckbox(child.findViewById(swipeFrontIcon));
                         }
 
+                        if (swipeFrontNumber > 0) {
+                            setNumber(child.findViewById(swipeFrontNumber));
+                        }
+
                         if (swipeFrontDetailText > 0) {
                             setDetailText(child.findViewById(swipeFrontDetailText));
                         }
@@ -1138,10 +1162,14 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 if (!swipeListView.isSwiping()) {
                     // Detect single tap.
                     if (!((DynamicListView) view).isScrollingY()) {
-                        // Detect if touch was on the checkbox.
                         if (didTouchView((View) checkbox.getParent(), hitX, hitY)) {
+                            // Touch was on the checkbox.
                             swipeListView.onClickCheckbox(checkbox, downPosition);
+                        } else if (number.isShown() && didTouchView((View) number.getParent(), hitX, hitY)) {
+                            // Touch was on the number.
+                            swipeListView.onClickNumber(number, downPosition);
                         } else {
+                            // Touch was on the main view.
                             swipeListView.onClickFrontView(frontView, downPosition);
                         }
                     }

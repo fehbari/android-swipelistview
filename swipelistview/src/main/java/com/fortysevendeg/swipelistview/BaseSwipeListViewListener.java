@@ -40,6 +40,10 @@ public class BaseSwipeListViewListener implements SwipeListViewListener {
     }
 
     @Override
+    public void onClickNumber(View view, int position) {
+    }
+
+    @Override
     public void onClickBackView(View view, int position) {
     }
 

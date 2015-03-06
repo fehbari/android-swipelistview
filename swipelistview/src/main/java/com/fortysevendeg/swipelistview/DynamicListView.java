@@ -206,6 +206,15 @@ public class DynamicListView extends SwipeListView {
     }
 
     /**
+     * Set the front view number.
+     *
+     * @param frontNumber View to set.
+     */
+    public void setFrontNumber(int frontNumber) {
+        getTouchListener().setSwipeFrontNumber(frontNumber);
+    }
+
+    /**
      * Set the front view detail text.
      *
      * @param detailText ID of the view to set.
@@ -332,6 +341,7 @@ public class DynamicListView extends SwipeListView {
      */
     public void setFrontCounter(int frontCounter) {
         mFrontCounterRes = frontCounter;
+        setFrontNumber(frontCounter);
     }
 
     /**

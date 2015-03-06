@@ -392,6 +392,18 @@ public class SwipeListView extends ListView {
     }
 
     /**
+     * Notifies onClickNumber
+     *
+     * @param view     view clicked
+     * @param position item clicked
+     */
+    protected void onClickNumber(View view, int position) {
+        if (swipeListViewListener != null && position != ListView.INVALID_POSITION) {
+            swipeListViewListener.onClickNumber(view, position);
+        }
+    }
+
+    /**
      * Notifies onClickBackView
      *
      * @param view     view clicked
