@@ -186,9 +186,9 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         configShortAnimationTime = swipeListView.getContext().getResources().getInteger(android.R.integer.config_shortAnimTime);
         animationTime = configShortAnimationTime;
         this.swipeListView = swipeListView;
-        swipeThreshold = convertDpiToPixel(60);
+        swipeThreshold = convertDpiToPixel(90);
         longSwipeThreshold = convertDpiToPixel(180);
-        minSwipeThreshold = convertDpiToPixel(20);
+        minSwipeThreshold = convertDpiToPixel(30);
     }
 
     /**
