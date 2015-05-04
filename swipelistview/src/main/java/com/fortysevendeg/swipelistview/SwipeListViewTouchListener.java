@@ -1165,7 +1165,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         if (didTouchView((View) checkbox.getParent(), hitX, hitY)) {
                             // Touch was on the checkbox.
                             swipeListView.onClickCheckbox(checkbox, downPosition);
-                        } else if (number.isShown() && didTouchView((View) number.getParent(), hitX, hitY)) {
+                        } else if (number.isShown() && didTouchView(number, hitX, hitY)) {
                             // Touch was on the number.
                             swipeListView.onClickNumber(number, downPosition);
                         } else {
