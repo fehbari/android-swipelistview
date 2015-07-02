@@ -732,7 +732,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
         View view = swipeListView.getChildAt(position - start);
         ++dismissAnimationRefCount;
         if (position >= start && position <= end) {
-            performDismiss(view, position, false);
+            performDismiss(view, position, false, true);
             return view.getHeight();
         } else {
             pendingDismisses.add(new PendingDismissData(position, null));
@@ -854,6 +854,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      * @param position list position
      */
     private void generateNoActionAnimate(final View view, final int position) {
+        containerView.setBackgroundColor(containerBackgroundColor);
+
         animate(view)
                 .translationX(0)
                 .setDuration(animationTime)
@@ -886,6 +888,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
             }
         }
 
+        containerView.setBackgroundColor(containerBackgroundColor);
+
         animate(view)
                 .translationX(animationMoveTo)
                 .setDuration(animationTime)
@@ -894,7 +898,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                     public void onAnimationEnd(Animator animation) {
                         if (swap) {
                             closeOpenedItems();
-                            performDismiss(parentView, position, true);
+                            performDismiss(frontView, position, true, true);
+                            performDismiss(backView, position, true, false);
                         }
                     }
                 });
@@ -962,6 +967,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private void resetCell() {
         if (downPosition != ListView.INVALID_POSITION) {
             containerView = null;
+            frontView.setBackgroundColor(Color.TRANSPARENT);
             frontView = null;
             backView = null;
             backView = null;
@@ -1300,7 +1306,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             checkbox.setBackgroundResource(frontIconRightBackground);
                             ((TextView) backIconLeft).setText(context.getString(backIconRightText));
                             ((TextView) detailText).setTextColor(rightBackgroundColor);
-                            label.setBackgroundResource(frontLabelRightBackground);
+                            //label.setBackgroundResource(frontLabelRightBackground);
 
                             if (swipeActionRight == SwipeListView.SWIPE_ACTION_DISMISS) {
                                 swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
@@ -1315,7 +1321,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             checkbox.setBackgroundResource(frontIconLeftBackground);
                             ((TextView) backIconRight).setText(context.getString(backIconLeftText));
                             ((TextView) detailText).setTextColor(leftBackgroundColor);
-                            label.setBackgroundResource(frontLabelLeftBackground);
+                            //label.setBackgroundResource(frontLabelLeftBackground);
 
                             if (swipeActionLeft == SwipeListView.SWIPE_ACTION_DISMISS) {
                                 swipeCurrentAction = SwipeListView.SWIPE_ACTION_DISMISS;
@@ -1331,7 +1337,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                                 checkbox.setBackgroundResource(frontIconLongRightBackground);
                                 ((TextView) backIconLeft).setText(context.getString(backIconLongRightText));
                                 ((TextView) detailText).setTextColor(longRightBackgroundColor);
-                                label.setBackgroundResource(frontLabelLongRightBackground);
+                                //label.setBackgroundResource(frontLabelLongRightBackground);
                             }
                         } else {
                             backView.setBackgroundColor(rightBackgroundColor);
@@ -1340,7 +1346,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                                 checkbox.setBackgroundResource(frontIconRightBackground);
                                 ((TextView) backIconLeft).setText(context.getString(backIconRightText));
                                 ((TextView) detailText).setTextColor(rightBackgroundColor);
-                                label.setBackgroundResource(frontLabelRightBackground);
+                                //label.setBackgroundResource(frontLabelRightBackground);
                             }
                         }
 
@@ -1359,7 +1365,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                                 checkbox.setBackgroundResource(frontIconLongLeftBackground);
                                 ((TextView) backIconRight).setText(context.getString(backIconLongLeftText));
                                 ((TextView) detailText).setTextColor(longLeftBackgroundColor);
-                                label.setBackgroundResource(frontLabelLongLeftBackground);
+                                //label.setBackgroundResource(frontLabelLongLeftBackground);
                             }
                         } else {
                             backView.setBackgroundColor(leftBackgroundColor);
@@ -1368,7 +1374,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                                 checkbox.setBackgroundResource(frontIconLeftBackground);
                                 ((TextView) backIconRight).setText(context.getString(backIconLeftText));
                                 ((TextView) detailText).setTextColor(leftBackgroundColor);
-                                label.setBackgroundResource(frontLabelLeftBackground);
+                                //label.setBackgroundResource(frontLabelLeftBackground);
                             }
                         }
 
@@ -1404,7 +1410,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                             backView.animate().alpha(0.2f).setDuration(200);
                             checkbox.setBackgroundResource(frontIconBackground);
                             ((TextView) detailText).setTextColor(accentColor);
-                            label.setBackgroundResource(frontLabelBackground);
+                            //label.setBackgroundResource(frontLabelBackground);
                             swipeCurrentAction = SwipeListView.SWIPE_ACTION_NONE;
                             longSwipeCurrentAction = SwipeListView.LONG_SWIPE_ACTION_NONE;
                         }
@@ -1478,7 +1484,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      * @param dismissView     View
      * @param dismissPosition Position of list
      */
-    protected void performDismiss(final View dismissView, final int dismissPosition, boolean doPendingDismiss) {
+    protected void performDismiss(final View dismissView, final int dismissPosition, boolean doPendingDismiss, final boolean triggerAction) {
         final ViewGroup.LayoutParams lp = dismissView.getLayoutParams();
         final int originalHeight = dismissView.getHeight();
 
@@ -1489,11 +1495,11 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     --dismissAnimationRefCount;
-                    if (dismissAnimationRefCount == 0) {
+                    if (dismissAnimationRefCount <= 0) {
                         removePendingDismisses(originalHeight);
                     }
                     dismissView.setVisibility(View.GONE);
-                    triggerAction();
+                    if (triggerAction) triggerAction();
                     resetCell();
                 }
             });
