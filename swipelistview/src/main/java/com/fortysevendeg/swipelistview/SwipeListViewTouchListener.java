@@ -969,6 +969,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
     private void resetCell() {
         if (downPosition != ListView.INVALID_POSITION) {
+            checkbox.setBackgroundResource(frontIconBackground);
+            ((TextView) detailText).setTextColor(accentColor);
             containerView = null;
             frontView.setBackgroundColor(Color.TRANSPARENT);
             frontView = null;
