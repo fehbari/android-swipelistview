@@ -762,7 +762,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 count++;
             }
         }
-        Log.d("SwipeListView", "selected: " + count);
         return count;
     }
 
@@ -814,8 +813,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      * @param position  Position of list
      */
     private void generateAnimate(final View view, final boolean swap, final boolean swapRight, final int position) {
-        Log.d("SwipeListView", "swap: " + swap + " - swapRight: " + swapRight + " - position: " + position);
-
         // Determines the icon to animate alongside the front view.
         View icon = swapRight ? backIconLeft : backIconRight;
 
@@ -1423,7 +1420,6 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
 
                     if (deltaMode > slop) {
                         swipeListView.onMove(downPosition);
-                        Log.d("SwipeListView", "deltaX: " + deltaX + " - swipingRight: " + swipingRight);
 
                         if (opened.get(downPosition)) {
                             swipeListView.onStartClose(downPosition, swipingRight);
