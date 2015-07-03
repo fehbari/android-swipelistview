@@ -840,7 +840,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 generateDismissAnimate(frontView, swap, swapRight, position);
                 animateIconDismiss(icon, swapRight);
             }
-            if (swipeCurrentAction == SwipeListView.SWIPE_ACTION_NONE) {
+            if (longSwipeCurrentAction == SwipeListView.SWIPE_ACTION_NONE) {
                 generateNoActionAnimate(view, position);
             }
         } else {
