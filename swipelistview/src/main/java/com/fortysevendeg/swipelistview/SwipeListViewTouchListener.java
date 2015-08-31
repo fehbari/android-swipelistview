@@ -127,7 +127,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     private boolean listViewMoving;
     private List<Boolean> checked = new ArrayList<Boolean>();
 
-    private int containerBackgroundColor;
+    private int containerBackground;
+    private int containerColor;
     private int accentColor;
     private int rightBackgroundColor;
     private int longRightBackgroundColor;
@@ -503,12 +504,21 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     }
 
     /**
-     * Set container background color.
+     * Set container background.
      *
-     * @param backgroundColor Background color.
+     * @param background Background resource.
      */
-    public void setContainerBackgroundColor(int backgroundColor) {
-        this.containerBackgroundColor = backgroundColor;
+    public void setContainerBackground(int background) {
+        this.containerBackground = background;
+    }
+
+    /**
+     * Set container color.
+     *
+     * @param color Container color.
+     */
+    public void setContainerColor(int color) {
+        this.containerColor = color;
     }
 
     /**
@@ -688,6 +698,15 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
     }
 
     /**
+     * Gets the container view.
+     *
+     * @return Container view object.
+     */
+    public View getContainerView() {
+        return containerView;
+    }
+
+    /**
      * Gets the resource ID of the front view.
      *
      * @return Front view resource ID.
@@ -854,7 +873,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      * @param position list position
      */
     private void generateNoActionAnimate(final View view, final int position) {
-        containerView.setBackgroundColor(containerBackgroundColor);
+        containerView.setBackgroundResource(containerBackground);
 
         animate(view)
                 .translationX(0)
@@ -888,7 +907,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
             }
         }
 
-        containerView.setBackgroundColor(containerBackgroundColor);
+        containerView.setBackgroundResource(containerBackground);
 
         animate(view)
                 .translationX(animationMoveTo)
@@ -1226,6 +1245,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                 }
 
                 float rawX = motionEvent.getRawX();
+                if (previousRawX == 0) previousRawX = rawX;
                 float deltaX = rawX - downX;
                 float deltaMode = Math.abs(deltaX);
                 // Delta for the current position X - the previous one.
@@ -1288,8 +1308,8 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         backIconRight.animate().alpha(1f).setDuration(200);
                     } else {
                         // Optimize overdraw by painting only one view.
-                        frontView.setBackgroundColor(containerBackgroundColor);
-                        containerView.setBackgroundColor(Color.TRANSPARENT);
+                        frontView.setBackgroundColor(containerColor);
+//                        containerView.setBackgroundResource(0);
 
                         // Set back view initial alpha.
                         backView.setAlpha(0.2f);
@@ -1391,7 +1411,7 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
                         // Nothing happened. Reset views.
                         backView.setVisibility(View.GONE);
                         frontView.setBackgroundColor(Color.TRANSPARENT);
-                        containerView.setBackgroundColor(containerBackgroundColor);
+                        containerView.setBackgroundResource(containerBackground);
                     }
 
                     swipeListView.onStartOpen(downPosition, swipeCurrentAction, swipingRight);
@@ -1486,36 +1506,38 @@ public class SwipeListViewTouchListener implements View.OnTouchListener {
      * @param dismissPosition Position of list
      */
     protected void performDismiss(final View dismissView, final int dismissPosition, boolean doPendingDismiss, final boolean triggerAction) {
-        final ViewGroup.LayoutParams lp = dismissView.getLayoutParams();
-        final int originalHeight = dismissView.getHeight();
+        if (dismissView != null) {
+            final ViewGroup.LayoutParams lp = dismissView.getLayoutParams();
+            final int originalHeight = dismissView.getHeight();
 
-        ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 1).setDuration(animationTime);
+            ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 1).setDuration(animationTime);
 
-        if (doPendingDismiss) {
-            animator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    --dismissAnimationRefCount;
-                    if (dismissAnimationRefCount <= 0) {
-                        removePendingDismisses(originalHeight);
+            if (doPendingDismiss) {
+                animator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        --dismissAnimationRefCount;
+                        if (dismissAnimationRefCount <= 0) {
+                            removePendingDismisses(originalHeight);
+                        }
+                        dismissView.setVisibility(View.GONE);
+                        if (triggerAction) triggerAction();
+                        resetCell();
                     }
-                    dismissView.setVisibility(View.GONE);
-                    if (triggerAction) triggerAction();
-                    resetCell();
+                });
+            }
+
+            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    lp.height = (Integer) valueAnimator.getAnimatedValue();
+                    dismissView.setLayoutParams(lp);
                 }
             });
+
+            pendingDismisses.add(new PendingDismissData(dismissPosition, dismissView));
+            animator.start();
         }
-
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                lp.height = (Integer) valueAnimator.getAnimatedValue();
-                dismissView.setLayoutParams(lp);
-            }
-        });
-
-        pendingDismisses.add(new PendingDismissData(dismissPosition, dismissView));
-        animator.start();
     }
 
     protected void resetPendingDismisses() {

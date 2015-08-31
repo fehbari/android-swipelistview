@@ -133,13 +133,22 @@ public class DynamicListView extends SwipeListView {
     }
 
     /**
-     * Set container background color.
+     * Set container background.
      *
-     * @param backgroundColor Background color.
+     * @param background Background resource.
      */
-    public void setContainerBackgroundColor(int backgroundColor) {
-        getTouchListener().setContainerBackgroundColor(backgroundColor);
-        mBackgroundColor = backgroundColor;
+    public void setContainerBackground(int background) {
+        getTouchListener().setContainerBackground(background);
+    }
+
+    /**
+     * Set container color.
+     *
+     * @param color Container color.
+     */
+    public void setContainerColor(int color) {
+        getTouchListener().setContainerColor(color);
+        mBackgroundColor = color;
     }
 
     /**
