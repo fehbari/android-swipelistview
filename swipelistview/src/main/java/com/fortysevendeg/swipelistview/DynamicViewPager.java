@@ -8,7 +8,7 @@ import android.view.MotionEvent;
 /**
  * Custom ViewPager that handles conflict with swiping cells.
  *
- * @author Felipe Bari
+ * @author Fernanda Bari
  */
 public class DynamicViewPager extends ViewPager {
 
